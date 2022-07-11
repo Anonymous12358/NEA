@@ -3,7 +3,7 @@ from typing import Optional
 import re
 import string
 
-from game.Board import Board
+from game.Board import Board, EMPTY
 
 _pattern_validator = re.compile(r'''
     [#.0-9a-zA-Z-]*
@@ -31,7 +31,7 @@ class Pattern:
         """
         Attempt to match this pattern to a given line and center
         :param line: The line to match
-        :return: The positions at which the line matched, as indexes into the board
+        :returns: The positions at which the line matched, as indices into the board, or None if it didn't
         """
         if self.__center is not None:
             # Skip the start of line to force the centers to line up
@@ -52,20 +52,20 @@ class Pattern:
         """
         Get whether this pattern matches a given line exactly, ignoring centers
         :param tiles: The line to match
-        :return: Whether or not this pattern matches the line exactly, ignoring centers
+        :returns: Whether or not this pattern matches the line exactly, ignoring centers
         """
         if len(self.__string) != len(tiles):
             return False
 
         variables = {}
         for char, tile in zip(self.__string, tiles):
-            if char == "#" and tile == 0:
+            if char == "#" and tile == EMPTY:
                 return False
-            elif char == "-" and tile != 0:
-                return False
-            elif char in string.digits and tile != int(char):
+            elif char == "-" and tile != EMPTY:
                 return False
             elif char in string.ascii_letters:
+                if tile != EMPTY:
+                    return False
                 inverse_char = char.lower() if char.isupper() else char.upper()
                 if char in variables:
                     if tile != variables[char]:

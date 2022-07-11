@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+EMPTY = -1
+
 
 class Board:
     @dataclass
@@ -13,24 +15,20 @@ class Board:
         center: int
 
     def __init__(self, dimensions: tuple[int, ...]):
-        self.__data = np.zeros(dimensions, dtype='int8')
+        # The board is full of emptiness
+        self.__data = np.full(dimensions, EMPTY, dtype='int8')
 
-    def get_node(self, coords: tuple[int, ...]) -> int:
+    def __getitem__(self, coords: tuple[int, ...]) -> int:
         if len(coords) != self.__data.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
         return self.__data[coords]
 
-    def remove(self, coords: tuple[int, ...]):
+    def __setitem__(self, coords: tuple[int, ...], value: int):
         if len(coords) != self.__data.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
-        self.__data[coords] = 0
-
-    def place(self, coords: tuple[int, ...], color: int):
-        if len(coords) != self.__data.ndim:
-            raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
-        if color <= 0:
-            raise ValueError(f"Invalid color {color} should be greater than 0")
-        self.__data[coords] = color
+        if value < -1:
+            raise ValueError(f"Invalid value {value} should be at least -1")
+        self.__data[coords] = value
 
     def get_lines(self, coords: tuple[int, ...]) -> list[Line]:
         """
@@ -44,7 +42,7 @@ class Board:
 
         # Create an array of indexes so we can tell where the returned tiles came from
         # The 0th dimension ranges over dimensions of the board
-        # Named iarray to aid the reader in resolving variable names
+        # Named iarray to aid the reader in distinguishing variable names
         iarray = np.indices(self.__data.shape)
 
         result = []
@@ -110,8 +108,9 @@ class Board:
                 for dimension in cropped_iarray
             )
 
-            # Make tiles a copy so that operations on it can't alter the board
-            tiles = np.copy(self.__data[tile_indices])
+            tiles = self.__data[tile_indices]
+            # Writing to tiles would alter the board
+            tiles.setflags(write=False)
 
             # Convert tile_indices from a tuple of arrays to an array of tuples, since the latter is more useful
             # elsewhere in the program
