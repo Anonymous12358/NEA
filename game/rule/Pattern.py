@@ -64,7 +64,7 @@ class Pattern:
             elif char == "-" and tile != EMPTY:
                 return False
             elif char in string.ascii_letters:
-                if tile != EMPTY:
+                if tile == EMPTY:
                     return False
                 inverse_char = char.lower() if char.isupper() else char.upper()
                 if char in variables:

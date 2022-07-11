@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from collections.abc import Iterable
+from dataclasses import dataclass, InitVar, field
 
 from game.Board import Board
 
@@ -6,7 +7,10 @@ from game.Board import Board
 @dataclass
 class GameState:
     board: Board
-    scores: dict[str, list[int]]
-    winner: int
-    active_player: int
-    num_players: int = 2
+    memos: InitVar[Iterable[str]]
+    num_players: int
+    scores: dict[str, list[int]] = field(init=False, default=None)
+    active_player: int = field(init=False, default=0)
+
+    def __post_init__(self, memos: list[str]):
+        self.scores = {memo: [0] * self.num_players for memo in memos}

@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from enum import auto, Enum
+from itertools import chain
 
+from game.Board import Board
 from game.rule.BoardAction import BoardAction
 from game.rule.Condition import Condition
 from game.GameState import GameState
@@ -22,24 +24,22 @@ class Rule:
         self.__score_actions = score_actions
         self.__board_actions = board_actions
 
-    def apply(self, gamestate: GameState, center: tuple[int, ...]):
-        lines = gamestate.board.get_lines(center)
-        matches = {}
+    def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]):
+        matched_directions = set()
+        matches = []
         for i, line in enumerate(lines):
-            if self.__multimatchmode == Rule.Mode.HALF and len(lines) - i - 1 in matches.keys():
+            if self.__multimatchmode == Rule.Mode.HALF and len(lines) - i - 1 in matched_directions:
                 continue
 
             match = self.__pattern.match_line(line)
             if match is not None:
                 does_satisfy = all(condition.apply(gamestate, match, center) for condition in self.__conditions)
                 if does_satisfy:
-                    matches[i] = match
+                    matched_directions.add(i)
+                    matches.append(match)
                     if self.__multimatchmode == Rule.Mode.ONE:
                         break
 
-        for score_action in self.__score_actions:
-            for match in matches.values():
-                score_action.apply(gamestate, match, center)
-        for board_action in self.__board_actions:
-            for match in matches.values():
-                board_action.apply(gamestate, match, center)
+        for action in chain(self.__score_actions, self.__board_actions):
+            for match in matches:
+                action.apply(gamestate, match, center)
