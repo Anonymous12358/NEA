@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, InitVar, field
 
-from game.Board import Board
+from pente.game.Board import Board
 
 
 @dataclass

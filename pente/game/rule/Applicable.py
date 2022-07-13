@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from enum import IntEnum
 
-from game.Board import EMPTY
-from game.GameState import GameState
+from pente.game.Board import EMPTY
+from pente.game.GameState import GameState
 
 
 class Applicable(ABC):
@@ -34,4 +34,6 @@ class Applicable(ABC):
         elif player_index == Applicable.PlayerIndexRogue.CENTER:
             return gamestate.board[center]
         else:
-            return gamestate.board[locations[player_index]]
+            player = gamestate.board[locations[player_index]]
+            if player == EMPTY:
+                raise RuntimeError("Player index refered to empty tile (likely caused by an unsafe datapack)")

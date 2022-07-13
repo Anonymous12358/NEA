@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
-from game.rule.Applicable import Applicable
-from game.GameState import GameState
+from pente.game.rule.Applicable import Applicable
+from pente.game.GameState import GameState
 
 
 class BoardAction(Applicable):

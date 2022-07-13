@@ -3,7 +3,7 @@ from typing import Optional
 import re
 import string
 
-from game.Board import Board, EMPTY
+from pente.game.Board import Board, EMPTY
 
 _pattern_validator = re.compile(r'''
     [#.0-9a-zA-Z-]*

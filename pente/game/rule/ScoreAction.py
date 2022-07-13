@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from enum import Enum
 from functools import partial
 
-from game.rule.Applicable import Applicable
-from game.GameState import GameState
+from pente.game.rule.Applicable import Applicable
+from pente.game.GameState import GameState
 
 
 class ScoreAction(Applicable):

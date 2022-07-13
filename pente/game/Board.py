@@ -26,8 +26,8 @@ class Board:
     def __setitem__(self, coords: tuple[int, ...], value: int):
         if len(coords) != self.__data.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
-        if value < -1:
-            raise ValueError(f"Invalid value {value} should be at least -1")
+        if value < 0 and value != EMPTY:
+            raise ValueError(f"Invalid value {value} should be at least 0 or be {EMPTY}")
         self.__data[coords] = value
 
     def get_lines(self, coords: tuple[int, ...]) -> list[Line]:
