@@ -16,29 +16,42 @@ class Game:
         self.__restrictions = restrictions
         self.__rules = rules
         self.__win_thresholds = win_thresholds
-        self.winner = -1
+        self.winner = None
+
+    @property
+    def gamestate(self):
+        return self.__gamestate
 
     def can_place(self, coords: tuple[int, ...], player: Optional[int] = None) -> bool:
         """
-        Check if a move is legal based on whether or not a stone is currently there, and on data-defined restrictions
+        Check if a move is legal based on:
+        - Whether or not the coordinates are within the grid
+        - Whether or not a stone is currently there
+        - Restrictions defined by data packs
         :param coords: The coordinates at which to consider placing
         :param player: The color of the tile to consider placing
         """
         # Save the previous active player so that checking can_place doesn't affect the active player
         saved_active_player = self.__gamestate.active_player
-
         if player is None:
             player = (saved_active_player + 1) % NUM_PLAYERS
         self.__gamestate.active_player = player
 
-        if self.__gamestate.board[coords] != EMPTY:
-            return True
+        try:
+            if len(coords) != len(self.__gamestate.board.dimensions):
+                return False
 
-        lines = self.__gamestate.board.get_lines(coords)
-        result = all(restriction.invoke(self.__gamestate, coords, lines) for restriction in self.__restrictions)
-        self.__gamestate.active_player = saved_active_player
+            if not all(0 <= ordinate < dimension
+                       for ordinate, dimension in zip(coords, self.__gamestate.board.dimensions)):
+                return False
 
-        return result
+            if self.__gamestate.board[coords] != EMPTY:
+                return False
+
+            lines = self.__gamestate.board.get_lines(coords)
+            return all(restriction.invoke(self.__gamestate, coords, lines) for restriction in self.__restrictions)
+        finally:
+            self.__gamestate.active_player = saved_active_player
 
     def place(self, coords: tuple[int, ...], player: Optional[int] = None):
         """

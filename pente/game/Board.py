@@ -18,6 +18,10 @@ class Board:
         # The board is full of emptiness
         self.__data = np.full(dimensions, EMPTY, dtype='int8')
 
+    @property
+    def dimensions(self):
+        return self.__data.shape
+
     def __getitem__(self, coords: tuple[int, ...]) -> int:
         if len(coords) != self.__data.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
@@ -29,6 +33,20 @@ class Board:
         if value < 0 and value != EMPTY:
             raise ValueError(f"Invalid value {value} should be at least 0 or be {EMPTY}")
         self.__data[coords] = value
+
+    def __str__(self):
+        result = ""
+        for coords, tile in np.ndenumerate(self.__data):
+            # Add new lines when moving in dimensions beyond the first
+            if any(coords):
+                for ordinate in coords[::-1]:
+                    if ordinate == 0:
+                        result += "\n"
+                    else:
+                        break
+            result += "-" if tile == EMPTY else chr(tile + 48)
+
+        return result
 
     def get_lines(self, coords: tuple[int, ...]) -> list[Line]:
         """

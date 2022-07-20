@@ -1,8 +1,5 @@
 import itertools
-import operator
 from collections.abc import Sequence, Collection
-from enum import Enum
-from functools import partial
 from typing import Optional
 
 from pente.game.rule.Applicable import Applicable
@@ -10,27 +7,19 @@ from pente.game.GameState import GameState
 
 
 class ScoreCondition(Applicable):
-    class Comparison(Enum):
-        # functools.partial is used as a workaround to allow callable enum members
-        # credit so/40338625
-        LESS_THAN = partial(operator.lt)
-        GREATER_THAN = partial(operator.gt)
-        EQUAL = partial(operator.eq)
-        MULTIPLE = partial(lambda a, b: a % b == 0)
-
-        def __call__(self, *args, **kwargs):
-            return self.value(*args, **kwargs)
-
-    def __init__(self, player_index: int, memo: str, comparison: Comparison, value: int):
+    def __init__(self, player_index: int, memo: str, minimum: Optional[int] = None, maximum: Optional[int] = None):
         self.__player_index = player_index
         self.__memo = memo
-        self.__comparison = comparison
-        self.__value = value
+        self.__minimum = minimum
+        self.__maximum = maximum
 
-    def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]):
+    def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]) -> bool:
         scores = gamestate.scores[self.__memo]
         player = self.resolve_player_index(gamestate, locations, center, self.__player_index)
-        return self.__comparison(scores[player], self.__value)
+        if (self.__minimum is not None and scores[player] < self.__minimum or
+                self.__maximum is not None and scores[player] > self.__maximum):
+            return False
+        return True
 
 
 class CoordsCondition(Applicable):
@@ -39,7 +28,7 @@ class CoordsCondition(Applicable):
         self.__minimum = minimum
         self.__maximum = maximum
 
-    def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]):
+    def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]) -> bool:
         for ordinate in itertools.compress(center, self.__axes):
             if (self.__minimum is not None and ordinate < self.__minimum or
                     self.__maximum is not None and ordinate > self.__maximum):

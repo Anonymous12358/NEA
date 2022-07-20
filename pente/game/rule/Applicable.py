@@ -13,12 +13,12 @@ class Applicable(ABC):
         REMOVE = -3
 
     @abstractmethod
-    def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]):
+    def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]) -> bool:
         raise NotImplementedError
 
     @staticmethod
     def resolve_player_index(gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...],
-                             player_index: int):
+                             player_index: int) -> int:
         """
         Resolve a player index specified within a rule, including the rogue values -1, -2, and -3
         :param gamestate: The gamestate within which to resolve the index
@@ -36,4 +36,5 @@ class Applicable(ABC):
         else:
             player = gamestate.board[locations[player_index]]
             if player == EMPTY:
-                raise RuntimeError("Player index refered to empty tile (likely caused by an unsafe datapack)")
+                raise RuntimeError("Player index referred to empty tile (likely caused by an unsafe datapack)")
+            return player
