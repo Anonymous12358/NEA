@@ -1,0 +1,142 @@
+from typing import Optional
+
+import jsonschema as jsonschema
+import yaml
+
+from pente.data import Language
+from pente.game.rule.BoardAction import BoardAction
+from pente.game.rule.Condition import ScoreCondition, CoordsCondition, Condition
+from pente.game.rule.Pattern import Pattern
+from pente.game.rule.Restriction import PatternRestriction, DisjunctionRestriction, Restriction
+from pente.game.rule.Rule import Rule
+from pente.game.rule.ScoreAction import ScoreAction
+
+
+class _DataError(RuntimeError):
+    pass
+
+
+# Side effects: logging
+def _load_schema():
+    try:
+        with open("../../resources/datapack/schema.yml", 'r') as schema_file:
+            return yaml.safe_load(schema_file)
+    except (FileNotFoundError, PermissionError):
+        language.print_key("error.file_absent.datapack_schema")
+        raise
+
+
+# Side effects: logging
+def _validate_qualname(datapack: dict, qualname: str):
+    owner, _, name = qualname.partition(".")
+    if name == "" or owner == "":
+        language.print_key("error.datapack.unqualified_name", pack=datapack["name"], name=qualname)
+        raise _DataError
+
+    if owner not in (datapack["name"], *datapack["dependecies"], *datapack["load_after"]):
+        language.print_key("warning.datapack.hidden_dependecy", pack=datapack["name"], dependency=owner)
+
+
+# Side effects: logging
+def _validate_memo(datapack: dict, memo: str):
+    # TODO
+    pass
+
+
+# Side effects: logging
+def _load_score_conditon(datapack: dict, dct: dict) -> ScoreCondition:
+    _validate_qualname(datapack, dct["memo"])
+    if "minimum" not in dct and "maximum" not in dct:
+        language.print_key("error.datapack.no_min_or_max", pack=datapack["name"])
+        raise _DataError
+
+    return ScoreCondition(dct["player_index"], dct["memo"], dct.get("minimum", None), dct.get("maximum", None))
+
+
+# Side effects: logging
+def _load_coords_condition(datapack: dict, dct: dict) -> CoordsCondition:
+    if "minimum" not in dct and "maximum" not in dct:
+        language.print_key("error.datapack.no_min_or_max", pack=datapack["name"])
+        raise _DataError
+
+    return CoordsCondition(dct["axes"], dct.get("minimum", None), dct.get("maximum", None))
+
+
+# Side effects: logging
+def _load_condition(datapack: dict, dct: dict) -> Condition:
+    return _load_score_conditon(datapack, dct) if dct["type"] == "score" else _load_score_conditon(datapack, dct)
+
+
+# Side effects: logging
+def _load_pattern(datapack: dict, pattern: str) -> Pattern:
+    try:
+        return Pattern(pattern)
+    except ValueError:
+        language.print_key("error.datapack.invalid_pattern", pack=datapack["name"], pattern=pattern)
+        raise _DataError
+
+
+# Side effects: logging
+def _load_pattern_restriction(datapack: dict, dct: dict) -> PatternRestriction:
+    pattern = _load_pattern(datapack, dct["pattern"])
+    conditions = [_load_condition(datapack, condition) for condition in dct.get("conditions", [])]
+    active_player = dct.get("active_player", None)
+    negate = dct.get("negate", False)
+    return PatternRestriction(pattern, conditions, active_player, negate)
+
+
+# Side effects: logging
+def _load_disjunction_restriction(datapack: dict, dct: dict) -> DisjunctionRestriction:
+    conjunctions = [
+        [_load_restriction(datapack, restriction, False) for restriction in conjunction]
+        for conjunction in dct["conjunctions"]
+    ]
+    return DisjunctionRestriction(conjunctions)
+
+
+# Side effects: logging
+def _load_restriction(datapack: dict, dct: dict, top_level: bool) -> Restriction:
+    if top_level:
+        if "name" in dct:
+            _validate_qualname(datapack, dct["name"])
+        else:
+            language.print_key("error.datapack.anonymous_restriction", pack=datapack["name"])
+
+    return (_load_pattern_restriction(datapack, dct) if dct["type"] == "pattern"
+            else _load_disjunction_restriction(datapack, dct))
+
+
+# Side effects: logging
+def _load_score_action(datapack: dict, dct: dict) -> ScoreAction:
+    memo = dct["memo"]
+    _validate_qualname(datapack, memo)
+    # TODO validate that this score is registered if it comes from this datapack
+
+    return ScoreAction(dct["player_index"], memo, dct["operation"], dct["value"])
+
+
+# Side effects: logging
+def _load_board_action(datapack: dict, dct: dict) -> BoardAction:
+    # TODO
+    pass
+
+
+# Side effects: logging
+def _load_rule(datapack: dict, dct: dict) -> Rule:
+    _validate_qualname(datapack, dct["name"])
+    pattern = _load_pattern(datapack, dct["pattern"])
+    multimatch_mode = dct.get("multimatch_mode", "half")
+    conditions = [_load_condition(datapack, condition) for condition in dct.get("conditions", [])]
+
+
+# Side effects: logging
+def _load_datapack(datapack, schema) -> Optional[dict]:
+    # Schema validation
+    try:
+        jsonschema.validate(datapack, schema)
+    except jsonschema.SchemaError:
+        language.print_key("error.datapack.invalid.schema")
+        return None
+    except jsonschema.ValidationError:
+        language.print_key("error.datapack.invalid.by_schema")
+        return None

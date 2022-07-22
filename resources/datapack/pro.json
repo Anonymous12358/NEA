@@ -1,0 +1,75 @@
+{
+  "name": "pro_pente",
+  "display_name": "Pro",
+  "depencies": ["pente"],
+  "load_after": [],
+  "scores": [
+    {"name": "pro_pente.move_count"}
+  ],
+  "restrictions": [
+    {
+      "name": "pro_pente.black_opening",
+      "type": "disjunction",
+      "conjunctions": [
+        [{
+          "comment": "Only black (player 1) has moves restricted",
+          "type": "pattern",
+          "pattern": ".",
+          "active_player": 0,
+          "negate": true
+        }],
+        [
+          {
+            "comment": "If you haven't played 2 or more moves, you must not play near the center",
+            "type": "disjunction",
+            "conjunctions": [
+              [{
+                "type": "pattern",
+                "pattern": ".",
+                "conditions": [{
+                  "type": "score",
+                  "memo": "pro_pente.move_count",
+                  "minimum": 2
+                }]
+              }], [{
+                "type": "pattern",
+                "pattern": ".",
+                "conditions": [{
+                  "type": "coords",
+                  "axes": [0, 1],
+                  "minimum": 8,
+                  "maximum": 12
+                }],
+                "negate": true
+              }]
+            ]
+          },
+          {
+            "comment": "If you haven't played 1 or more moves, you must play on the center",
+            "type": "disjunction",
+            "conjunctions": [
+              [{
+                "type": "pattern",
+                "pattern": ".",
+                "conditions": [{
+                  "type": "score",
+                  "memo": "pro_pente.move_count",
+                  "minimum": 1
+                }]
+              }], [{
+                "type": "pattern",
+                "pattern": ".",
+                "conditions": [{
+                  "type": "coords",
+                  "axes": [0, 1],
+                  "minimum": 10,
+                  "maximum": 10
+                }]
+              }]
+            ]
+          }
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "pente",
+  "display_name": "Pente",
+  "dependencies": [],
+  "load_after": [],
+  "scores": [
+    {"name": "pente.captures", "threshold": 10},
+    {"name": "pente.victory", "threshold": 1}
+  ],
+  "restrictions": [],
+  "rules": [
+    {
+      "name": "pente.capture",
+      "pattern": "[A]aaA",
+      "multimatch_mode": "half",
+      "conditions": [],
+      "score_actions": [
+        {"player_index": -1, "memo": "pente.captures", "operation": "add", "value": 2}
+      ],
+      "board_actions": [
+        {"player_index": -3, "location_index": 1},
+        {"player_index": -3, "location_index": 2}
+      ]
+    },
+    {
+      "name": "pente.five_in_a_row",
+      "pattern": "AAAAA",
+      "multimatch_mode": "one",
+      "conditions": [],
+      "score_actions": [
+        {"player_index": -1, "memo": "pente.victory", "operation": "add", "value": 1}
+      ],
+      "board_actions": []
+    }
+  ],
+  "board": {
+    "dimensions": [19, 19],
+    "topology": [
+      ["stop", "stop"],
+      ["stop", "stop"]
+    ]
+  }
+}

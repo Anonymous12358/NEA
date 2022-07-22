@@ -1,0 +1,338 @@
+title: Datapack
+description: >-
+  This schema validates datapacks for loading into memory, including the built-in datapacks.
+  Editing this file may cause the game not to load properly.
+$schema: "https://json-schema.org/draft/2020-12/schema"
+type: object
+properties:
+  name:
+    description: "The internal name of the datapack; used for other datapacks to refer to this"
+    type: string
+  display_name:
+    description: "The name to display to the user when they are selecting data packs"
+    type: string
+  dependencies:
+    description: "A list of names of datapacks that must be loaded before this in order for this to load"
+    type: array
+    items:
+      type: string
+    uniqueItems: true
+  load_after:
+    description: >-
+      A list of names of datapacks that must load before this if they are present
+      Datapacks should not be specified as both dependencies and load_afters
+    type: array
+    items:
+      type: string
+    uniqueItems: true
+  scores:
+    type: object
+    properties:
+      name:
+        description: >-
+          The name, or memo, of this type of score, used to refer to it within this and other datapacks
+          Memos should be qualified with the name of the datapack that introduces them, using a "."
+          Memos qualified with the name of a different datapack are treated as overrides, and are only loaded if a score
+          of this name was loaded by the other datapack first
+        type: string
+      threshold:
+        description: "If a player exceeds this value for this type of score at the end of a turn, they win"
+        type: integer
+        exclusiveMinimum: 0
+    required:
+    - name
+  restrictions:
+    type: array
+    items:
+      $ref: "#/$defs/restriction"
+  rules:
+    type: array
+    items:
+      description: "A rule to apply at the end of each turn"
+      type: object
+      properties:
+        name:
+          description: >-
+            The name of this rule, used to refer to it in other datapacks
+            Names should be qualified with the name of the datapack that introduces them, using a "."
+            Names qualified with the name of a different datapack are treated as overrides, and are only loaded if a rule
+            of this name was loaded by the other datapack first
+          type: string
+        priority:
+          description: >-
+            Defines the order in which rules should be applied
+            Rules are first ordered by priority; then within each priority bracket, by the order in which the datapacks
+            were loaded; then within each datapack, by the order the rules are listed in
+          type: string
+          enum:
+            - "earliest"
+            - "earlier"
+            - "early"
+            - "default"
+            - "late"
+            - "later"
+            - "latest"
+          default: "default"
+        pattern:
+          description: "The pattern that must match for this rule to be applied."
+          $ref: "#/$defs/pattern"
+        multimatch_mode:
+          description: >-
+            The behaviour if the rule would apply to multiple lines from the same event.
+            "one":  Only the first application occurs
+            "half": If both a line and its reverse satisfy the pattern and conditions, the rule will only apply to the
+                    first of that pair
+            "all":  The rule will apply to every applicable line
+          type: string
+          enum:
+            - "one"
+            - "half"
+            - "all"
+          default: "half"
+        conditions:
+          description: "A list of conditions that restrict applications of the rule"
+          type: array
+          items:
+            $ref: "#/$defs/condition"
+          default: []
+        score_actions:
+          description: >-
+            A list of actions operating on player scores to be performed if the pattern and conditions are satisfied
+            All score actions are performed in the order specified, then all board actions are performed
+          type: array
+          items:
+            type: object
+            properties:
+              player_index:
+                description: >-
+                  Determines which player to use the score of
+                  0 or more: Use the player who owns the stone at that position in the match
+                  -1:        Use the center of the match
+                  -2:        Use the active player
+                type: integer
+              memo:
+                description: "The type of score to use"
+                type: string
+              operation:
+                description: "How to interact with the player's current score"
+                type: string
+                enum:
+                  - "set"
+                  - "add"
+                  - "multiply"
+              value:
+                description: "The value to use in the operation on the score"
+                type: integer
+            required:
+              - player_index
+              - memo
+              - operation
+              - value
+          default: []
+        board_actions:
+          description: >-
+            A list of actions operating on the board to be performed if the pattern and conditions are satisfied
+          type: array
+          items:
+            type: object
+            properties:
+              player_index:
+                description: >-
+                  Determines which player's piece should be placed / replace the piece currently there
+                  0 or more: Use the player who owns the stone at that position in the match
+                  -1:        Use the center of the match
+                  -2:        Use the active player
+                  -3:        Instead of placing a piece, remove one
+                type: integer
+                minimum: -3
+              location_index:
+                description: >-
+                  The index of the location to modify
+                  0 or more: Modify that location in the match
+                  -1:        Modify the centre of the match
+                type: integer
+            required:
+              - player_index
+              - location_index
+          default: []
+        active_player:
+          description: "If present, this player must be the active player for this rule to apply"
+          type: integer
+          minimum: 0
+          maximum: 1
+      required:
+        - name
+        - pattern
+  board:
+    type: object
+    properties:
+      dimensions:
+        description: "At least one integer representing dimensions of the board. Height appears before width."
+        type: array
+        minItems: 1
+        items:
+          type: integer
+          minimum: 1
+      topology:
+        decription: >-
+          N.B. In the current version, topologies are not loaded, only validated. Support for topologies is planned for
+          a future release.
+          An array of pairs for each dimension, with each pair representing the behaviour of each end of the board in
+          that dimension when a line would reach that end. Every dimension must be specified.
+        type: array
+        minItems: 1
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            description: >-
+              The behaviour of one end of the board when a line would reach this end
+              "stop":   The line stops at this point as normal
+              "reverse: The line travels back in the opposite direction to that in which it was travelling
+              "loop":   The line is reflected about the perpendicular bisector of this end of the board
+              "return": The line is teleported to the corresponding position on the opposite end of the board, and
+                        continues in the same direction
+            type: string
+            enum:
+              - "stop"
+              - "reverse"
+              - "loop"
+              - "return"
+required:
+- name
+$defs:
+  restriction:
+    anyOf:
+      -
+        title: "Disjunction restriction"
+        type: object
+        properties:
+          name:
+            description: >-
+              The name of this restriction, used to refer to it in other datapacks
+              For restrictions that are children of other restrictions, names are optional and aren't loaded
+              For top-level restrictions, names are required.
+              Names of top-level restrictions should be qualified with the name of the datapack that introduces them,
+              using a ".". Names qualified with the name of a different datapack are treated as overrides, and are only
+              loaded if a restriction of this name was loaded by the other datapack first.
+            type: string
+          type:
+            type: string
+            const: "disjunction"
+          conjunctions:
+            description: >-
+              An array of arrays of restrictions. At least one of the subarrays must have all of its restrictions
+              match for this restriction to match.
+            type: array
+            items:
+              type: array
+              items:
+                $ref: "#/$defs/restriction"
+        required:
+          - type
+          - conjunctions
+      -
+        title: "Pattern restriction"
+        type: object
+        properties:
+          name:
+            description: >-
+              The name of this restriction, used to refer to it in other datapacks
+              For restrictions that are children of other restrictions, names are optional and aren't loaded
+              For top-level restrictions, names are required.
+              Names of top-level restrictions should be qualified with the name of the datapack that introduces them,
+              using a ".". Names qualified with the name of a different datapack are treated as overrides, and are only
+              loaded if a restriction of this name was loaded by the other datapack first.
+            type: string
+          type:
+            type: string
+            const: "pattern"
+          pattern:
+            $ref: "#/$defs/pattern"
+          conditions:
+            description: "An array of conditions that must be satisfied for this restriction to match"
+            type: array
+            $ref: "#/$defs/condition"
+            default: []
+          active_player:
+            description: "If present, this player must be the active player for this restriction to match"
+            type: int
+            minimum: 0
+            maximum: 1
+          negate:
+            description: "Whether or not this rule should be negated, requiring it not to match"
+            type: boolean
+            default: false
+        required:
+          - type
+          - pattern
+  pattern:
+    description: "See the documentation for pattern syntax"
+    type: string
+  condition:
+    anyOf:
+      -
+        title: "Score condition"
+        description: "A condition which is based on a player's score"
+        type: object
+        properties:
+          type:
+            type: string
+            const: "score"
+          player_index:
+            description: >-
+              Determines which player to use the score of
+              0 or more: Use the player who owns the stone at that position in the match
+              -1:        Use the center of the match
+              -2:        Use the active player
+            type: integer
+            minimum: -2
+          memo:
+            description: "The type of score to use"
+            type: string
+          minimum:
+            description: >-
+              If present, the minimum value for the score
+              At least one of minimum and maximum must be specified
+            type: integer
+            minimum: 0
+          maximum:
+            description: >-
+              If present, the maximum value for the score
+              At least one of minimum and maximum must be specified
+            type: integer
+            minimum: 0
+        required:
+          - type
+          - memo
+      -
+        title: "Coordinates condition"
+        description: "A condition based on the coordinates of the move"
+        type: object
+        properties:
+          type:
+            type: string
+            const: "coords"
+          axes:
+            description: "The dimensions in which to apply the condition"
+            type: array
+            minItems: 1
+            items:
+              type: integer
+              minimum: 0
+          minimum:
+            description: >-
+              If present, the minimum value for each ordinate in each dimension that the condition applies in
+              At least one of minimum and maximum must be specified
+            type: integer
+            minimum: 0
+          maximum:
+            description: >-
+              If present, the maximum value for each ordinate in each dimension that the condition applies in
+              At least one of minimum and maximum must be specified
+            type: integer
+            minimum: 0
+        required:
+          - type
+          - axes

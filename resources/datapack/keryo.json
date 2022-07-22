@@ -1,0 +1,22 @@
+{
+  "name": "keryo",
+  "display_name": "Keryo",
+  "dependencies": ["pente"],
+  "load_after": [],
+  "scores": [
+    {"name": "pente.captures", "threshold": 15}
+  ],
+  "restrictions": [],
+  "rules": [
+    {
+      "name": "keryo.long_capture",
+      "pattern": "[A]aaaA",
+      "multimatch_mode": "half",
+      "conditions": [],
+      "score_actions": [
+        {"player_index": -1, "memo": "pente.captures", "operation": "add", "value": 3}
+      ],
+      "board_actions": []
+    }
+  ]
+}
