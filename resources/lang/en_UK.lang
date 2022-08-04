@@ -1,20 +1,33 @@
 .name=English (United Kingdom)
-error.file_absent.lang=The required lang file cannot be found in resources/lang. Text will revert to language keys.
+.warning="~WARNING~ "
+.error="##ERROR## "
+error.file_absent.lang=The required lang file {language} cannot be found in resources/lang. Text will revert to language keys.
 error.file_abset.datapack_schema=schema.yml is missing. Reinstall the game or restore files from backup.
+
 error.datapack.invalid.schema=schema.yml is invalid (did you change it?). Reinstall the game or restore files from backup.
+error.datapack.datapack_absent=Datapack {pack} can't be loaded because the expected file is missing or restricted.
+error.datapack.invalid_json=Datapack {pack} can't be loaded because the file isn't valid json.
 error.datapack.invalid.by_schema=A datapack file is invalid.
+error.datapack.circular.dependency=Datapacks can't be loaded because of a circular dependency involving pack {pack1}.
+error.datapack.circular.load_after=Datapacks can't be loaded because of a circular relationship caused by load_after, involving pack {pack}.
+error.datapack.inconsistent_name=Can't load the pack {file} because it calls itself {pack}.
 warning.datapack.double_load_after=Datapack {pack} lists a datapack in both dependencies and load_after.
-warning.datapack.hidden_dependency=Datapack {pack} uses a name from {dependency} but doesn't declare it as a dependency or load_after.
+error.datapack.invalid_override=Datapack {pack} declares an override for {name}, but {dependency} doesn't register that name
+error.datapack.hidden_dependency=Datapack {pack} uses a name from {dependency} but doesn't declare it as a dependency or load_after.
 error.datapack.unqualified_name=Datapack {pack} contains unqualified name "{name}".
 error.datapack.no_min_or_max=Datapack {pack} contains a condition with neither a minimum nor a maximum value.
 error.datapack.invalid_pattern=Datapack {pack} contains invalid pattern "{pattern}".
-error.datapack.anonymous_restriction=Datapack {pack} contains an anonymous top-level restriction.
+error.datapack.unregistered_score=Datapack {pack} contains a reference to score "{name}", which has not been registered.
+--error.datapack.anonymous_restriction=Datapack {pack} contains an anonymous top-level restriction.
+
+cli.name="== {name} =="
 cli.move.prompt=Enter coordinates to place at, as natural numbers separated by spaces
 cli.move.bad_format=Move in bad format
-cli.move.illegal=That move is invalid. It may be outside the board, on top of an existing stone, or forbidden by rules
+cli.move.illegal=That move is invalid. It may be outside the board, on top of an existing stone, or forbidden by restrictions
+cli.score.one_score={display_name}: {values}
 cli.score.header=Scores for player {player}:
-cli.score.score={memo}: {value}
+cli.score.score={display_name}: {value}
 cli.your_turn=It's your turn
-cli.victory.you=You win!
+cli.victory.you=Congratulations. You win!
 cli.victory.other=Player {player} wins!
 warning.lang.bad_line=Invalid line in lang file: {line}. Skipping it.

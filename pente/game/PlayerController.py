@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
+from pente.game.Board import Board
 from pente.game.GameState import GameState
 
 
@@ -10,9 +11,9 @@ class PlayerController(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, gamestate: GameState, is_your_turn: bool):
+    def update(self, board: Board, displayable_scores: Sequence[tuple[str, Sequence[int]]], is_your_turn: bool):
         raise NotImplementedError
 
     @abstractmethod
-    def send_victory(self, winner: int, is_you: bool):
+    def send_victory(self, gamestate: GameState, winner: int, is_you: bool):
         raise NotImplementedError

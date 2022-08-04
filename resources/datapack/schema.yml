@@ -35,8 +35,12 @@ properties:
           Memos qualified with the name of a different datapack are treated as overrides, and are only loaded if a score
           of this name was loaded by the other datapack first
         type: string
+      display_name:
+        description: "The name to display to the user during gameplay. If absent, the score will not be displayed."
+        type: string
       threshold:
-        description: "If a player exceeds this value for this type of score at the end of a turn, they win"
+        description: >-
+          If specified, if a player exceeds this value for this type of score at the end of a turn, they win
         type: integer
         exclusiveMinimum: 0
     required:
@@ -48,121 +52,7 @@ properties:
   rules:
     type: array
     items:
-      description: "A rule to apply at the end of each turn"
-      type: object
-      properties:
-        name:
-          description: >-
-            The name of this rule, used to refer to it in other datapacks
-            Names should be qualified with the name of the datapack that introduces them, using a "."
-            Names qualified with the name of a different datapack are treated as overrides, and are only loaded if a rule
-            of this name was loaded by the other datapack first
-          type: string
-        priority:
-          description: >-
-            Defines the order in which rules should be applied
-            Rules are first ordered by priority; then within each priority bracket, by the order in which the datapacks
-            were loaded; then within each datapack, by the order the rules are listed in
-          type: string
-          enum:
-            - "earliest"
-            - "earlier"
-            - "early"
-            - "default"
-            - "late"
-            - "later"
-            - "latest"
-          default: "default"
-        pattern:
-          description: "The pattern that must match for this rule to be applied."
-          $ref: "#/$defs/pattern"
-        multimatch_mode:
-          description: >-
-            The behaviour if the rule would apply to multiple lines from the same event.
-            "one":  Only the first application occurs
-            "half": If both a line and its reverse satisfy the pattern and conditions, the rule will only apply to the
-                    first of that pair
-            "all":  The rule will apply to every applicable line
-          type: string
-          enum:
-            - "one"
-            - "half"
-            - "all"
-          default: "half"
-        conditions:
-          description: "A list of conditions that restrict applications of the rule"
-          type: array
-          items:
-            $ref: "#/$defs/condition"
-          default: []
-        score_actions:
-          description: >-
-            A list of actions operating on player scores to be performed if the pattern and conditions are satisfied
-            All score actions are performed in the order specified, then all board actions are performed
-          type: array
-          items:
-            type: object
-            properties:
-              player_index:
-                description: >-
-                  Determines which player to use the score of
-                  0 or more: Use the player who owns the stone at that position in the match
-                  -1:        Use the center of the match
-                  -2:        Use the active player
-                type: integer
-              memo:
-                description: "The type of score to use"
-                type: string
-              operation:
-                description: "How to interact with the player's current score"
-                type: string
-                enum:
-                  - "set"
-                  - "add"
-                  - "multiply"
-              value:
-                description: "The value to use in the operation on the score"
-                type: integer
-            required:
-              - player_index
-              - memo
-              - operation
-              - value
-          default: []
-        board_actions:
-          description: >-
-            A list of actions operating on the board to be performed if the pattern and conditions are satisfied
-          type: array
-          items:
-            type: object
-            properties:
-              player_index:
-                description: >-
-                  Determines which player's piece should be placed / replace the piece currently there
-                  0 or more: Use the player who owns the stone at that position in the match
-                  -1:        Use the center of the match
-                  -2:        Use the active player
-                  -3:        Instead of placing a piece, remove one
-                type: integer
-                minimum: -3
-              location_index:
-                description: >-
-                  The index of the location to modify
-                  0 or more: Modify that location in the match
-                  -1:        Modify the centre of the match
-                type: integer
-            required:
-              - player_index
-              - location_index
-          default: []
-        active_player:
-          description: "If present, this player must be the active player for this rule to apply"
-          type: integer
-          minimum: 0
-          maximum: 1
-      required:
-        - name
-        - pattern
+      $ref: "#/$defs/rule"
   board:
     type: object
     properties:
@@ -336,3 +226,120 @@ $defs:
         required:
           - type
           - axes
+  rule:
+    description: "A rule to apply at the end of each turn"
+    type: object
+    properties:
+      name:
+        description: >-
+          The name of this rule, used to refer to it in other datapacks
+          Names should be qualified with the name of the datapack that introduces them, using a "."
+          Names qualified with the name of a different datapack are treated as overrides, and are only loaded if a rule
+          of this name was loaded by the other datapack first
+        type: string
+      priority:
+        description: >-
+          Defines the order in which rules should be applied
+          Rules are first ordered by priority; then within each priority bracket, by the order in which the datapacks
+          were loaded; then within each datapack, by the order the rules are listed in
+        type: string
+        enum:
+          - "earliest"
+          - "earlier"
+          - "early"
+          - "default"
+          - "late"
+          - "later"
+          - "latest"
+        default: "default"
+      pattern:
+        description: "The pattern that must match for this rule to be applied."
+        $ref: "#/$defs/pattern"
+      multimatch_mode:
+        description: >-
+          The behaviour if the rule would apply to multiple lines from the same event.
+          "one":  Only the first application occurs
+          "half": If both a line and its reverse satisfy the pattern and conditions, the rule will only apply to the
+                  first of that pair
+          "all":  The rule will apply to every applicable line
+        type: string
+        enum:
+          - "one"
+          - "half"
+          - "all"
+        default: "half"
+      conditions:
+        description: "A list of conditions that restrict applications of the rule"
+        type: array
+        items:
+          $ref: "#/$defs/condition"
+        default: [ ]
+      score_actions:
+        description: >-
+          A list of actions operating on player scores to be performed if the pattern and conditions are satisfied
+          All score actions are performed in the order specified, then all board actions are performed
+        type: array
+        items:
+          type: object
+          properties:
+            player_index:
+              description: >-
+                Determines which player to use the score of
+                0 or more: Use the player who owns the stone at that position in the match
+                -1:        Use the center of the match
+                -2:        Use the active player
+              type: integer
+            memo:
+              description: "The type of score to use"
+              type: string
+            operation:
+              description: "How to interact with the player's current score"
+              type: string
+              enum:
+                - "set"
+                - "add"
+                - "multiply"
+            value:
+              description: "The value to use in the operation on the score"
+              type: integer
+          required:
+            - player_index
+            - memo
+            - operation
+            - value
+        default: [ ]
+      board_actions:
+        description: >-
+          A list of actions operating on the board to be performed if the pattern and conditions are satisfied
+        type: array
+        items:
+          type: object
+          properties:
+            player_index:
+              description: >-
+                Determines which player's piece should be placed / replace the piece currently there
+                0 or more: Use the player who owns the stone at that position in the match
+                -1:        Use the center of the match
+                -2:        Use the active player
+                -3:        Instead of placing a piece, remove one
+              type: integer
+              minimum: -3
+            location_index:
+              description: >-
+                The index of the location to modify
+                0 or more: Modify that location in the match
+                -1:        Modify the centre of the match
+              type: integer
+              minimum: -1
+          required:
+            - player_index
+            - location_index
+        default: []
+      active_player:
+        description: "If present, this player must be the active player for this rule to apply"
+        type: integer
+        minimum: 0
+        maximum: 1
+    required:
+      - name
+      - pattern

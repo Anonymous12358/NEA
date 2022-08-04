@@ -1,0 +1,24 @@
+.name=Esperanto
+.warning="~AVERTO~  "
+.error="##ERARO## "
+error.file_absent.lang=La bezonata dosiero "{language}" ne troveblas en "resources/lang".
+error.file_abset.datapack_schema="schema.yml" mankas. Reinstalu la ludon aŭ reparu la doserion per sekurkopio.
+error.datapack.invalid.schema="schema.yml" malvalidas. Reinstalu la ludon aŭ reparu la dosieron per sekurkopio.
+error.datapack.invalid.by_schema=Datenaro malvalidas.
+warning.datapack.double_load_after=Datenaro {pack} enlistigas datenaron en kaj "dependencies" kaj "load_after".
+warning.datapack.hidden_dependency=Datenaro {pack} enhavas nomon de {dependency} sed ne deklaras ĝin en aŭ "dependencies" aŭ "load_after".
+error.datapack.unqualified_name=Datenaro {pack} enhavas malkompletan nomon "{name}".
+error.datapack.no_min_or_max=Datenaro {pack} enhavas malvalidan kondiĉon kun nek "minimum" nek "maximum".
+error.datapack.invalid_pattern=Datenaro {pack} enhavas malvalidan serĉpeton "{pattern}".
+error.datapack.anonymous_restriction=Datenaro {pack} enhavas sennoman malpermeson je la supera nivelo.
+cli.name="== {name} =="
+cli.move.prompt=Enskribu koordinatoj por almeti ŝtoneton, apartigatajn per spacetoj
+cli.move.bad_format=Tiuj koordinatoj estas en malvalida formato
+cli.move.illegal=Tiuj koordinatoj malvalidas. Eble ili estas ekster la tabulo, aŭ jam estas ŝtoneto tie, aŭ ili estas malpermesataj per malpermeso
+cli.score.one_score={display_name}: {values}
+cli.score.header=Poentoj por {player}:
+cli.score.score={display_name}: {value}
+cli.your_turn=Estas via vico
+cli.victory.you=Vi gajnas. Gratulon!
+cli.victory.other={player} gajnas!
+warning.lang.bad_line=Estas malvalida linio en lingvodosiero: {line}. Ĝi preterpasiĝos.

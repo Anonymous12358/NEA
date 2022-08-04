@@ -3,6 +3,7 @@ from typing import Optional
 
 from pente.game.Board import Board, EMPTY
 from pente.game.GameState import GameState
+from pente.game.Score import Score
 from pente.game.rule.Restriction import Restriction
 from pente.game.rule.Rule import Rule
 
@@ -10,17 +11,21 @@ NUM_PLAYERS = 2
 
 
 class Game:
-    def __init__(self, dimensions: tuple[int, ...], restrictions: Sequence[Restriction], rules: Sequence[Rule],
-                 memos: Sequence[str], win_thresholds: dict[str, int]):
-        self.__gamestate = GameState(Board(dimensions), memos, NUM_PLAYERS)
+    def __init__(self, dimensions: tuple[int, ...], scores: Sequence[Score], restrictions: Sequence[Restriction],
+                 rules: Sequence[Rule]):
+        self.__gamestate = GameState(Board(dimensions), [score.name for score in scores], NUM_PLAYERS)
+        self.__scores = scores
         self.__restrictions = restrictions
         self.__rules = rules
-        self.__win_thresholds = win_thresholds
         self.winner = None
 
     @property
     def gamestate(self):
         return self.__gamestate
+
+    def get_displayable_scores(self):
+        return [(score.display_name, self.__gamestate.scores[score.name])
+                for score in self.__scores if score.display_name is not None]
 
     def can_place(self, coords: tuple[int, ...], player: Optional[int] = None) -> bool:
         """
@@ -75,11 +80,12 @@ class Game:
             rule.invoke(self.__gamestate, coords, lines)
 
         # Check victory conditions
-        for memo, threshold in self.__win_thresholds.items():
-            for player in range(NUM_PLAYERS):
-                if self.__gamestate.scores[memo][player] >= threshold:
-                    self.winner = player
-                    break
-            else:
-                continue
-            break
+        for score in self.__scores:
+            if score.win_threshold is not None:
+                for player in range(NUM_PLAYERS):
+                    if self.__gamestate.scores[score.name][player] >= score.win_threshold:
+                        self.winner = player
+                        break
+                else:
+                    continue
+                break

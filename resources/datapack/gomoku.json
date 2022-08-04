@@ -1,0 +1,29 @@
+{
+  "name": "gomoku",
+  "display_name": "Gomoku",
+  "dependencies": [],
+  "load_after": [],
+  "scores": [
+    {"name": "gomoku.victory", "threshold": 1}
+  ],
+  "restrictions": [],
+  "rules": [
+    {
+      "name": "gomoku.five_in_a_row",
+      "pattern": "AAAAA",
+      "multimatch_mode": "one",
+      "conditions": [],
+      "score_actions": [
+        {"player_index": -1, "memo": "gomoku.victory", "operation": "add", "value": 1}
+      ],
+      "board_actions": []
+    }
+  ],
+  "board": {
+    "dimensions": [19, 19],
+    "topology": [
+      ["stop", "stop"],
+      ["stop", "stop"]
+    ]
+  }
+}

@@ -1,11 +1,10 @@
 {
   "name": "pente",
   "display_name": "Pente",
-  "dependencies": [],
+  "dependencies": ["gomoku"],
   "load_after": [],
   "scores": [
-    {"name": "pente.captures", "threshold": 10},
-    {"name": "pente.victory", "threshold": 1}
+    {"name": "pente.captures", "display_name": "Captures", "threshold": 10}
   ],
   "restrictions": [],
   "rules": [
@@ -21,16 +20,6 @@
         {"player_index": -3, "location_index": 1},
         {"player_index": -3, "location_index": 2}
       ]
-    },
-    {
-      "name": "pente.five_in_a_row",
-      "pattern": "AAAAA",
-      "multimatch_mode": "one",
-      "conditions": [],
-      "score_actions": [
-        {"player_index": -1, "memo": "pente.victory", "operation": "add", "value": 1}
-      ],
-      "board_actions": []
     }
   ],
   "board": {
