@@ -3,7 +3,6 @@
 .error="##ERROR## "
 error.file_absent.lang=The required lang file {language} cannot be found in resources/lang. Text will revert to language keys.
 error.file_abset.datapack_schema=schema.yml is missing. Reinstall the game or restore files from backup.
-
 error.datapack.invalid.schema=schema.yml is invalid (did you change it?). Reinstall the game or restore files from backup.
 error.datapack.datapack_absent=Datapack {pack} can't be loaded because the expected file is missing or restricted.
 error.datapack.invalid_json=Datapack {pack} can't be loaded because the file isn't valid json.
@@ -18,16 +17,27 @@ error.datapack.unqualified_name=Datapack {pack} contains unqualified name "{name
 error.datapack.no_min_or_max=Datapack {pack} contains a condition with neither a minimum nor a maximum value.
 error.datapack.invalid_pattern=Datapack {pack} contains invalid pattern "{pattern}".
 error.datapack.unregistered_score=Datapack {pack} contains a reference to score "{name}", which has not been registered.
---error.datapack.anonymous_restriction=Datapack {pack} contains an anonymous top-level restriction.
-
-cli.name="== {name} =="
-cli.move.prompt=Enter coordinates to place at, as natural numbers separated by spaces
+error.datapack.anonymous_restriction=Datapack {pack} contains an anonymous top-level restriction.
+cli.invalid_command=Invalid arguments for command. Type "help" for help.
+cli.unknown_command=Unknown command. Type "help" for help.
+cli.login.no_space=At most two accounts can be signed in at the same time.
+cli.login.password_prompt="Password: "
+cli.login.incorrect_details=Your username or password is incorrect.
+cli.login.ok=Login successful.
+cli.register.duplicate_username=An account with this username already exists.
+cli.register.ok=Account registration successful.
+cli.load_data.error=Data could not be loaded due to an error.
 cli.move.bad_format=Move in bad format
-cli.move.illegal=That move is invalid. It may be outside the board, on top of an existing stone, or forbidden by restrictions
-cli.score.one_score={display_name}: {values}
-cli.score.header=Scores for player {player}:
-cli.score.score={display_name}: {value}
-cli.your_turn=It's your turn
-cli.victory.you=Congratulations. You win!
-cli.victory.other=Player {player} wins!
+cli.move.no_game=You must create a game before you can move in it.
+cli.move.not_turn=It's not your turn.
+cli.move.illegal=That move is invalid. It may be outside the board, on top of an existing stone, or forbidden by restrictions.
+cli.launch.already_playing=Exit the current game to launch a new one.
+cli.launch.no_data=The game can't be launched because data loading failed.
+cli.output.score.one_score={display_name}: {values}
+cli.output.score.header=Scores for player {player}:
+cli.output.score.score={display_name}: {value}
+cli.output.turn.who=It's player {player}'s turn
+cli.output.turn.you=It's your turn
+cli.output.victory.who=Player {player} wins!
+cli.output.victory.you=Congratulations. You win!
 warning.lang.bad_line=Invalid line in lang file: {line}. Skipping it.

@@ -11,14 +11,14 @@ error.datapack.unqualified_name=Datenaro {pack} enhavas malkompletan nomon "{nam
 error.datapack.no_min_or_max=Datenaro {pack} enhavas malvalidan kondiĉon kun nek "minimum" nek "maximum".
 error.datapack.invalid_pattern=Datenaro {pack} enhavas malvalidan serĉpeton "{pattern}".
 error.datapack.anonymous_restriction=Datenaro {pack} enhavas sennoman malpermeson je la supera nivelo.
-cli.name="== {name} =="
+cli.output.name="== {name} =="
 cli.move.prompt=Enskribu koordinatoj por almeti ŝtoneton, apartigatajn per spacetoj
 cli.move.bad_format=Tiuj koordinatoj estas en malvalida formato
 cli.move.illegal=Tiuj koordinatoj malvalidas. Eble ili estas ekster la tabulo, aŭ jam estas ŝtoneto tie, aŭ ili estas malpermesataj per malpermeso
-cli.score.one_score={display_name}: {values}
-cli.score.header=Poentoj por {player}:
-cli.score.score={display_name}: {value}
-cli.your_turn=Estas via vico
-cli.victory.you=Vi gajnas. Gratulon!
-cli.victory.other={player} gajnas!
+cli.output.score.one_score={display_name}: {values}
+cli.output.score.header=Poentoj por {player}:
+cli.output.score.score={display_name}: {value}
+cli.output.your_turn=Estas via vico
+cli.output.victory.you=Vi gajnas. Gratulon!
+cli.output.victory.other={player} gajnas!
 warning.lang.bad_line=Estas malvalida linio en lingvodosiero: {line}. Ĝi preterpasiĝos.

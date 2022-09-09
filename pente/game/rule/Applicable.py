@@ -25,7 +25,7 @@ class Applicable(ABC):
         :param locations: The match locations
         :param center: The location of the center in the board (NOT an index into locations)
         :param player_index: The index to resolve
-        :return:
+        :returns: The player at that index
         """
         if player_index == Applicable.PlayerIndexRogue.REMOVE:
             return EMPTY

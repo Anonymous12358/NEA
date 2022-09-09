@@ -26,25 +26,27 @@ properties:
       type: string
     uniqueItems: true
   scores:
-    type: object
-    properties:
-      name:
-        description: >-
-          The name, or memo, of this type of score, used to refer to it within this and other datapacks
-          Memos should be qualified with the name of the datapack that introduces them, using a "."
-          Memos qualified with the name of a different datapack are treated as overrides, and are only loaded if a score
-          of this name was loaded by the other datapack first
-        type: string
-      display_name:
-        description: "The name to display to the user during gameplay. If absent, the score will not be displayed."
-        type: string
-      threshold:
-        description: >-
-          If specified, if a player exceeds this value for this type of score at the end of a turn, they win
-        type: integer
-        exclusiveMinimum: 0
-    required:
-    - name
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          description: >-
+            The name, or memo, of this type of score, used to refer to it within this and other datapacks
+            Memos should be qualified with the name of the datapack that introduces them, using a "."
+            Memos qualified with the name of a different datapack are treated as overrides, and are only loaded if a score
+            of this name was loaded by the other datapack first
+          type: string
+        display_name:
+          description: "The name to display to the user during gameplay. If absent, the score will not be displayed."
+          type: string
+        threshold:
+          description: >-
+            If specified, if a player exceeds this value for this type of score at the end of a turn, they win
+          type: integer
+          exclusiveMinimum: 0
+      required:
+      - name
   restrictions:
     type: array
     items:
@@ -147,7 +149,7 @@ $defs:
             default: []
           active_player:
             description: "If present, this player must be the active player for this restriction to match"
-            type: int
+            type: integer
             minimum: 0
             maximum: 1
           negate:

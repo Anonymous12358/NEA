@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
 from enum import IntEnum
-from typing import Collection
+from typing import Collection, TYPE_CHECKING
 
 from pente.data.Language import Language
 from pente.game.Score import Score
@@ -11,20 +12,12 @@ from pente.game.rule.Restriction import PatternRestriction, DisjunctionRestricti
 from pente.game.rule.Rule import Rule
 from pente.game.rule.ScoreAction import ScoreAction
 
+if TYPE_CHECKING:
+    from pente.data.data import DatapackHeader
+
 
 class DataError(RuntimeError):
     pass
-
-
-@dataclass(frozen=True)
-class DatapackHeader:
-    name: str
-    dependencies: list[str]
-    load_after: list[str]
-    dct: dict
-
-    def __getitem__(self, item):
-        return self.dct[item]
 
 
 class RulePriority(IntEnum):
@@ -106,7 +99,9 @@ def _score_action(dct: dict, header: DatapackHeader, language: Language, scores:
         language.print_key("error.datapack.index_out_of_pattern", pack=header.name)
         raise DataError("error.datapack.index_out_of_pattern")
 
-    return ScoreAction(dct["player_index"], dct["memo"], dct["operation"], dct["value"])
+    operation = ScoreAction.Operation[dct["operation"].upper()]
+
+    return ScoreAction(dct["player_index"], dct["memo"], operation, dct["value"])
 
 
 def board_action(dct: dict, header: DatapackHeader, language: Language, pattern_len: int) -> BoardAction:
@@ -118,7 +113,7 @@ def board_action(dct: dict, header: DatapackHeader, language: Language, pattern_
 
 
 def rule(dct: dict, header: DatapackHeader, language: Language, scores: Collection[str]) -> tuple[RulePriority, Rule]:
-    pattern_ = pattern(dct["patter"], header, language)
+    pattern_ = pattern(dct["pattern"], header, language)
     pattern_len = len(dct["pattern"])
     multimatch_mode = Rule.Mode[dct.get("multimatch_mode", "half").upper()]
     conditions = [

@@ -23,6 +23,10 @@ class Game:
     def gamestate(self):
         return self.__gamestate
 
+    @property
+    def next_player(self):
+        return (self.__gamestate.active_player + 1) % self.__gamestate.num_players
+
     def get_displayable_scores(self):
         return [(score.display_name, self.__gamestate.scores[score.name])
                 for score in self.__scores if score.display_name is not None]
@@ -66,10 +70,10 @@ class Game:
         """
         if player is None:
             player = (self.__gamestate.active_player + 1) % NUM_PLAYERS
-        self.__gamestate.active_player = player
-
         if not self.can_place(coords, player):
             return
+
+        self.__gamestate.active_player = player
 
         # Place tile
         self.__gamestate.board[coords] = player

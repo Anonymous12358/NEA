@@ -21,6 +21,9 @@ class Language:
             raise
 
         for line in lines:
+            if line == "":
+                continue
+
             key, sep, value = line.strip().partition("=")
             if value.startswith("\"") and value.endswith("\""):
                 value = value[1:-1]
