@@ -1,3 +1,7 @@
+"""
+Loads a provided list of datapacks to construct a set of rules
+"""
+
 from __future__ import annotations
 
 import itertools
@@ -77,6 +81,7 @@ def load_packs(names: Sequence[str], language: Language) -> Data:
                 restrictions[restr_dict["name"]] = deserialize.restriction(restr_dict, header, language,
                                                                            scores.keys())
 
+    # Rules
     priorities = {}
     rules = {}
     for header in load_order:
@@ -177,12 +182,12 @@ def _get_load_order(names: Sequence[str], schema: dict, language: Language) -> l
                 language.print_key("error.datapack.circular.load_after", pack=name1)
                 raise DataError("error.datapack.circular.load_after")
 
-    # Generate a load order by repeatedly removing initial nodes
+    # Generate a load order by repeatedly removing final nodes
     result = []
     while len(network.nodes) > 0:
         for name in network.nodes:
             # noinspection PyCallingNonCallable
-            if network.in_degree(name) == 0:
+            if network.out_degree(name) == 0:
                 result.append(headers[name])
                 network.remove_node(name)
                 break
@@ -231,17 +236,20 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
     :param language: The language in which to log.
     :returns: The datapack header.
     """
+    # Get the datapack
     try:
         with open(f"resources/datapack/{name}.json", 'r') as file:
             try:
                 dct = json.load(file)
             except json.JSONDecodeError:
                 language.print_key("error.datapack.invalid_json", pack=name)
+                # TODO Is it worth crashing out of the program or should this error be caught again further up?
                 raise
     except (FileNotFoundError, PermissionError):
         language.print_key("error.datapack.datapack_absent", pack=name)
         raise
 
+    # Schema validation
     try:
         jsonschema.validate(dct, schema)
     except jsonschema.SchemaError:

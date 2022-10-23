@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from enum import auto, Enum
-from itertools import chain
+import itertools
 from typing import Optional
 
 from pente.game.Board import Board
@@ -28,6 +28,7 @@ class Rule:
         self.__active_player = active_player
 
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:
+        """Apply the rule everywhere where it is applicable, for a given centre"""
         if self.__active_player is not None and gamestate.active_player != self.__active_player:
             return False
 
@@ -46,7 +47,8 @@ class Rule:
                     if self.__multimatchmode == Rule.Mode.ONE:
                         break
 
-        for action in chain(self.__score_actions, self.__board_actions):
+        # TODO Update documentation to reflect this order of invocation
+        for action in itertools.chain(self.__score_actions, self.__board_actions):
             for match in matches:
                 action.apply(gamestate, match, center)
 

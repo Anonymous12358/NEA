@@ -1,11 +1,21 @@
 {
   "name": "pro",
   "display_name": "Pro",
-  "depencies": ["gomoku"],
+  "dependencies": ["gomoku"],
   "load_after": [],
   "scores": [
     {"name": "pro.move_count"}
   ],
+  "rules": [{
+    "name": "pro.increment_move_count",
+    "pattern": ".",
+    "multimatch_mode": "one",
+    "conditions": [],
+    "score_actions": [
+      {"player_index": -2, "memo": "pro.move_count", "operation": "add", "value": 1}
+    ],
+    "board_actions": []
+  }],
   "restrictions": [
     {
       "name": "pro.black_opening",
@@ -20,29 +30,22 @@
         }],
         [
           {
-            "comment": "If you haven't played 2 or more moves, you must not play near the center",
-            "type": "disjunction",
-            "conjunctions": [
-              [{
-                "type": "pattern",
-                "pattern": ".",
-                "conditions": [{
-                  "type": "score",
-                  "memo": "pro.move_count",
-                  "minimum": 2
-                }]
-              }], [{
-                "type": "pattern",
-                "pattern": ".",
-                "conditions": [{
-                  "type": "coords",
-                  "axes": [0, 1],
-                  "minimum": 8,
-                  "maximum": 12
-                }],
-                "negate": true
-              }]
-            ]
+            "comment": "If you have played precisely 1 move, you must not play near the center",
+            "type": "pattern",
+            "pattern": ".",
+            "conditions": [{
+              "type": "score",
+              "player_index": -2,
+              "memo": "pro.move_count",
+              "minimum": 1,
+              "maximum": 1
+            }, {
+              "type": "coords",
+              "axes": [0, 1],
+              "minimum": 8,
+              "maximum": 12
+            }],
+            "negate": true
           },
           {
             "comment": "If you haven't played 1 or more moves, you must play on the center",
@@ -53,6 +56,7 @@
                 "pattern": ".",
                 "conditions": [{
                   "type": "score",
+                  "player_index": -2,
                   "memo": "pro.move_count",
                   "minimum": 1
                 }]

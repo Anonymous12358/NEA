@@ -1,3 +1,7 @@
+"""
+The command line interface
+"""
+
 import getpass
 import inspect
 

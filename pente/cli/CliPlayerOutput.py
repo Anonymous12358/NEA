@@ -1,3 +1,7 @@
+"""
+Implementation of PlayerOutput for the command line
+"""
+
 from __future__ import annotations
 
 from pente.data.Language import Language

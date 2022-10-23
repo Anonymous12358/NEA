@@ -7,7 +7,10 @@ from pente.game.GameState import GameState
 
 
 class Applicable(ABC):
+    """Anything that looks at a pattern match is applicable"""
+
     class PlayerIndexRogue(IntEnum):
+        """The rogue values used for player_index keys in datapacks"""
         CENTER = -1
         ACTIVE = -2
         REMOVE = -3

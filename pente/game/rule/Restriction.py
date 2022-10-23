@@ -15,7 +15,7 @@ class DisjunctionRestriction:
         self.__conjunctions = conjunctions
 
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:
-        return all(any(restriction.invoke(gamestate, center, lines) for restriction in conjunction)
+        return any(all(restriction.invoke(gamestate, center, lines) for restriction in conjunction)
                    for conjunction in self.__conjunctions)
 
 
@@ -29,7 +29,8 @@ class PatternRestriction(Rule):
         self.__negate = negate
 
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:
-        return self.__negate != super().invoke(gamestate, center, lines)
+        result = self.__negate != super().invoke(gamestate, center, lines)
+        return result
 
 
 Restriction = DisjunctionRestriction | PatternRestriction

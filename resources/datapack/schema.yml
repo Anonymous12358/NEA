@@ -9,7 +9,7 @@ properties:
     description: "The internal name of the datapack; used for other datapacks to refer to this"
     type: string
   display_name:
-    description: "The name to display to the user when they are selecting data packs"
+    description: "Unused. Users currently interact directly with the internal name."
     type: string
   dependencies:
     description: "A list of names of datapacks that must be loaded before this in order for this to load"
@@ -66,7 +66,7 @@ properties:
           type: integer
           minimum: 1
       topology:
-        decription: >-
+        description: >-
           N.B. In the current version, topologies are not loaded, only validated. Support for topologies is planned for
           a future release.
           An array of pairs for each dimension, with each pair representing the behaviour of each end of the board in
@@ -145,7 +145,8 @@ $defs:
           conditions:
             description: "An array of conditions that must be satisfied for this restriction to match"
             type: array
-            $ref: "#/$defs/condition"
+            items:
+              $ref: "#/$defs/condition"
             default: []
           active_player:
             description: "If present, this player must be the active player for this restriction to match"
@@ -197,6 +198,7 @@ $defs:
             minimum: 0
         required:
           - type
+          - player_index
           - memo
       -
         title: "Coordinates condition"

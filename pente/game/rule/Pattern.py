@@ -48,6 +48,7 @@ class Pattern:
                     return self._get_match_locations(line, start)
             return None
 
+    # TODO: For more than two players, this handles variables oddly
     def _full_match(self, tiles: Sequence[int]) -> bool:
         """
         Get whether this pattern matches a given line exactly, ignoring centers

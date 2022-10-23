@@ -1,3 +1,7 @@
+"""
+Functions called by data.py to construct rule-related objects from JSON
+"""
+
 from __future__ import annotations
 
 from enum import IntEnum
