@@ -9,7 +9,7 @@ properties:
     description: "The internal name of the datapack; used for other datapacks to refer to this"
     type: string
   display_name:
-    description: "The name to display to the user when they are selecting data packs"
+    description: "Unused. Users currently interact directly with the internal name."
     type: string
   dependencies:
     description: "A list of names of datapacks that must be loaded before this in order for this to load"
@@ -66,7 +66,7 @@ properties:
           type: integer
           minimum: 1
       topology:
-        decription: >-
+        description: >-
           N.B. In the current version, topologies are not loaded, only validated. Support for topologies is planned for
           a future release.
           An array of pairs for each dimension, with each pair representing the behaviour of each end of the board in
@@ -145,7 +145,8 @@ $defs:
           conditions:
             description: "An array of conditions that must be satisfied for this restriction to match"
             type: array
-            $ref: "#/$defs/condition"
+            items:
+              $ref: "#/$defs/condition"
             default: []
           active_player:
             description: "If present, this player must be the active player for this restriction to match"
@@ -197,6 +198,7 @@ $defs:
             minimum: 0
         required:
           - type
+          - player_index
           - memo
       -
         title: "Coordinates condition"
@@ -228,6 +230,56 @@ $defs:
         required:
           - type
           - axes
+  score_action:
+    type: object
+    properties:
+      player_index:
+        description: >-
+          Determines which player to use the score of
+          0 or more: Use the player who owns the stone at that position in the match
+          -1:        Use the center of the match
+          -2:        Use the active player
+        type: integer
+      memo:
+        description: "The type of score to use"
+        type: string
+      operation:
+        description: "How to interact with the player's current score"
+        type: string
+        enum:
+          - "set"
+          - "add"
+          - "multiply"
+      value:
+        description: "The value to use in the operation on the score"
+        type: integer
+    required:
+      - player_index
+      - memo
+      - operation
+      - value
+  board_action:
+    type: object
+    properties:
+      player_index:
+        description: >-
+          Determines which player's piece should be placed / replace the piece currently there
+          0 or more: Use the player who owns the stone at that position in the match
+          -1:        Use the center of the match
+          -2:        Use the active player
+          -3:        Instead of placing a piece, remove one
+        type: integer
+        minimum: -3
+      location_index:
+        description: >-
+          The index of the location to modify
+          0 or more: Modify that location in the match
+          -1:        Modify the centre of the match
+        type: integer
+        minimum: -1
+    required:
+      - player_index
+      - location_index
   rule:
     description: "A rule to apply at the end of each turn"
     type: object
@@ -243,7 +295,7 @@ $defs:
         description: >-
           Defines the order in which rules should be applied
           Rules are first ordered by priority; then within each priority bracket, by the order in which the datapacks
-          were loaded; then within each datapack, by the order the rules are listed in
+          were loaded; then within each datapack, by the order in which the rules are listed
         type: string
         enum:
           - "earliest"
@@ -282,60 +334,14 @@ $defs:
           All score actions are performed in the order specified, then all board actions are performed
         type: array
         items:
-          type: object
-          properties:
-            player_index:
-              description: >-
-                Determines which player to use the score of
-                0 or more: Use the player who owns the stone at that position in the match
-                -1:        Use the center of the match
-                -2:        Use the active player
-              type: integer
-            memo:
-              description: "The type of score to use"
-              type: string
-            operation:
-              description: "How to interact with the player's current score"
-              type: string
-              enum:
-                - "set"
-                - "add"
-                - "multiply"
-            value:
-              description: "The value to use in the operation on the score"
-              type: integer
-          required:
-            - player_index
-            - memo
-            - operation
-            - value
+          "$ref": "#/$defs/score_action"
         default: [ ]
       board_actions:
         description: >-
           A list of actions operating on the board to be performed if the pattern and conditions are satisfied
         type: array
         items:
-          type: object
-          properties:
-            player_index:
-              description: >-
-                Determines which player's piece should be placed / replace the piece currently there
-                0 or more: Use the player who owns the stone at that position in the match
-                -1:        Use the center of the match
-                -2:        Use the active player
-                -3:        Instead of placing a piece, remove one
-              type: integer
-              minimum: -3
-            location_index:
-              description: >-
-                The index of the location to modify
-                0 or more: Modify that location in the match
-                -1:        Modify the centre of the match
-              type: integer
-              minimum: -1
-          required:
-            - player_index
-            - location_index
+          "$ref": "#/$defs/board_action"
         default: []
       active_player:
         description: "If present, this player must be the active player for this rule to apply"

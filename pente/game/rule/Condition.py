@@ -1,4 +1,3 @@
-import itertools
 from collections.abc import Sequence, Collection
 from typing import Optional
 
@@ -29,7 +28,9 @@ class CoordsCondition(Applicable):
         self.__maximum = maximum
 
     def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]) -> bool:
-        for ordinate in itertools.compress(center, self.__axes):
+        for axis, ordinate in enumerate(center):
+            if axis not in self.__axes:
+                continue
             if (self.__minimum is not None and ordinate < self.__minimum or
                     self.__maximum is not None and ordinate > self.__maximum):
                 return False

@@ -57,7 +57,10 @@ class Pattern:
         if len(self.__string) != len(tiles):
             return False
 
-        variables = {}
+        # Each uppercase letter maps to the player it represents
+        variables: dict[str, int] = {}
+        # Each lowercase letter maps to the players that it has represented, and therefore can't be the uppercase letter
+        lower_representees: dict[str, set[int]] = {}
         for char, tile in zip(self.__string, tiles):
             if char == "#" and tile == EMPTY:
                 return False
@@ -66,15 +69,25 @@ class Pattern:
             elif char in string.ascii_letters:
                 if tile == EMPTY:
                     return False
-                inverse_char = char.lower() if char.isupper() else char.upper()
+
+                # Variables must represent the same player
                 if char in variables:
                     if tile != variables[char]:
                         return False
-                elif inverse_char in variables:
-                    if tile == variables[inverse_char]:
+                # Variables must not represent their inverse
+                elif char.isupper():
+                    if char.lower() in lower_representees and tile in lower_representees[char]:
                         return False
-                else:
                     variables[char] = tile
+                # Variables must not represent their inverse
+                elif char.upper() in variables:
+                    if tile == variables[char.upper()]:
+                        return False
+                # Record lowercase representees
+                elif char in lower_representees:
+                    lower_representees[char].add(tile)
+                else:
+                    lower_representees[char] = {tile}
 
         return True
 

@@ -1,3 +1,7 @@
+"""
+The command line interface
+"""
+
 import getpass
 import inspect
 
@@ -17,7 +21,9 @@ class Cli:
             "login": self.login,
             "data": self.load_data,
             "play": self.launch_game,
+            "concede": self.concede,
             "move": self.move,
+            "exit": self.exit
         }
 
     def mainloop(self):
@@ -86,6 +92,14 @@ class Cli:
                 return
             self.__main.launch_game((CliPlayerOutput(self.__language), CliPlayerOutput(self.__language)))
 
+    def concede(self):
+        if input("Concede the game? (y/n) ").lower() != "y":
+            return
+
+        response = self.__main.ui_concede()
+        if not response:
+            self.__language.print_key("cli.concede.no_game")
+
     def move(self, *coords: str):
         try:
             coords = tuple(map(int, coords))
@@ -99,3 +113,7 @@ class Cli:
             self.__language.print_key("cli.move.not_turn")
         elif response is Main.MoveResponse.ILLEGAL:
             self.__language.print_key("cli.move.illegal")
+
+    def exit(self):
+        if input("Exit the application? (y/n) ").lower() == "y":
+            raise SystemExit

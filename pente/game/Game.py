@@ -7,6 +7,7 @@ from pente.game.Score import Score
 from pente.game.rule.Restriction import Restriction
 from pente.game.rule.Rule import Rule
 
+# From here down, the game works with more than two players. Those idiots at UX just didn't know what to do with it.
 NUM_PLAYERS = 2
 
 
@@ -47,16 +48,22 @@ class Game:
         self.__gamestate.active_player = player
 
         try:
+            # Wrong number of dimensions
             if len(coords) != len(self.__gamestate.board.dimensions):
                 return False
 
+            # Out of bounds
             if not all(0 <= ordinate < dimension
                        for ordinate, dimension in zip(coords, self.__gamestate.board.dimensions)):
                 return False
 
+            # Already a tile there
             if self.__gamestate.board[coords] != EMPTY:
                 return False
 
+            # Check restrictions
+            if not self.__restrictions:
+                return True
             lines = self.__gamestate.board.get_lines(coords)
             return all(restriction.invoke(self.__gamestate, coords, lines) for restriction in self.__restrictions)
         finally:

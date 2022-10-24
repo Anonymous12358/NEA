@@ -1,3 +1,7 @@
+"""
+Manages the loading of language files and the processing of output
+"""
+
 from collections.abc import Collection
 
 

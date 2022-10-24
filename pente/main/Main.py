@@ -1,3 +1,7 @@
+"""
+Interfaces between the UI and the features, delegating UI requests to the appropriate class
+"""
+
 from enum import Enum, auto
 from typing import Optional, Sequence
 
@@ -11,7 +15,12 @@ from pente.main.PlayerOutput import PlayerOutput
 
 
 class _ResponseEnum(Enum):
+    # so/73492285
     # TODO Rewrite this more neatly once 3.11 adds `__post_init__`
+    """
+    Response enums are used to represent to the UI what happened in the Main when the request was made
+    """
+
     def __init__(self, *args):
         if self.name != 'OK' and 'OK' not in self.__class__.__members__:
             raise ValueError("Response enum must have OK as the first element")
@@ -20,7 +29,8 @@ class _ResponseEnum(Enum):
         return self == self.__class__.OK
 
 
-# TODO May want a separate SuperGame to keep from cluttering this class
+# TODO Rationalise this class. Do we need this and a separate supergame? Or only a supergame, leaving the rest in Cli?
+# And should it be called Main?
 class Main:
     class GameMode(Enum):
         HOTSEAT = auto()  # Two players using the same UI
@@ -108,6 +118,14 @@ class Main:
         self.__update_players()
         return Main.LaunchGameResponse.OK
 
+    def ui_concede(self):
+        if self.__game is None:
+            return False
+        else:
+            self.__game.winner = (self.__get_ui_player() + 1) % 2
+            self.__end_game()
+            return True
+
     class MoveResponse(_ResponseEnum):
         OK = auto()
         NO_GAME = auto()
@@ -115,6 +133,10 @@ class Main:
         ILLEGAL = auto()
 
     def __get_ui_player(self):
+        """
+        Get which player index the UI is currently controlling. For playing on a network or against AI, this is
+        constant; for hotseat play, this is the next player in turn order.
+        """
         if self.__mode in (Main.GameMode.AI, Main.GameMode.NETWORK_HOST):
             return 0
         elif self.__mode is Main.GameMode.NETWORK_HOST:
