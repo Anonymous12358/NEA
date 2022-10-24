@@ -47,7 +47,6 @@ class Rule:
                     if self.__multimatchmode == Rule.Mode.ONE:
                         break
 
-        # TODO Update documentation to reflect this order of invocation
         for action in itertools.chain(self.__score_actions, self.__board_actions):
             for match in matches:
                 action.apply(gamestate, match, center)

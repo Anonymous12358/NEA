@@ -59,9 +59,10 @@ class Board:
         if len(centre) != self.__data.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
 
+        # Data array, ie the board itself
+        darray = self.__data
         # Create an array of indexes so we can tell where the returned tiles came from
         # The 0th dimension ranges over dimensions of the board
-        # Named iarray to aid the reader in distinguishing variable names
         iarray = np.indices(self.__data.shape)
 
         result = []
@@ -75,7 +76,8 @@ class Board:
                 continue
 
             # Transform the array so that the line travels forward in all dimensions in which it travels
-            # We perform operations on iarray and then use those to index the board in order to get the tiles
+            # We perform operations both on darray and iarray, so we get both data and indices
+            # We can't do just iarray because then changes in the board won't be reflected in the returned lines
             # Start with a slice(None) to skip the 0th dimension of iarray
             transform_indices = [slice(None)]
             for ordinate, direction in zip(centre, directs):
@@ -84,6 +86,7 @@ class Board:
                 else:
                     transform_indices.append(slice(None))
             transformed_iarrray = iarray[tuple(transform_indices)]
+            transformed_darray = darray[tuple(transform_indices[1:])]
 
             # Transform centre coordinates so that they are coordinates into the transformed array
             transformed_centre = tuple(
@@ -120,6 +123,7 @@ class Board:
                     crop_indices.append(slice(start_index, end_index))
 
             cropped_iarray = transformed_iarrray[tuple(crop_indices)]
+            cropped_darray = transformed_darray[tuple(crop_indices[1:])]
 
             # Take the diagonal from iarray for each dimension, and combine into a tuple
             # np.einsum can get a diagonal in an arbitrary number of dimensions
@@ -127,8 +131,8 @@ class Board:
                 np.einsum(f'{"i"*(cropped_iarray.ndim-1)}->i', dimension)
                 for dimension in cropped_iarray
             )
+            tiles = np.einsum(f'{"i"*cropped_darray.ndim}->i', cropped_darray)
 
-            tiles = self.__data[tile_indices]
             # Writing to tiles would alter the board
             tiles.setflags(write=False)
 

@@ -34,7 +34,7 @@ class CliPlayerOutput(PlayerOutput):
 
     def send_victory(self, game: Game, your_index: int, is_hotseat: bool):
         if is_hotseat or game.winner != your_index:
-            self.__language.print_key("cli.output.victory.who", player=str(game.next_player))
+            self.__language.print_key("cli.output.victory.who", player=str(game.winner))
         else:
             self.__language.print_key("cli.output.victory.you")
 

@@ -30,6 +30,7 @@ class _ResponseEnum(Enum):
 
 
 # TODO Rationalise this class. Do we need this and a separate supergame? Or only a supergame, leaving the rest in Cli?
+# And should it be called Main?
 class Main:
     class GameMode(Enum):
         HOTSEAT = auto()  # Two players using the same UI
@@ -116,6 +117,14 @@ class Main:
         self.__game = self.__data.to_game()
         self.__update_players()
         return Main.LaunchGameResponse.OK
+
+    def ui_concede(self):
+        if self.__game is None:
+            return False
+        else:
+            self.__game.winner = (self.__get_ui_player() + 1) % 2
+            self.__end_game()
+            return True
 
     class MoveResponse(_ResponseEnum):
         OK = auto()

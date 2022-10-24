@@ -95,6 +95,7 @@ def load_packs(names: Sequence[str], language: Language) -> Data:
     # Stable sort so that ties are broken by insertion order, ie by datapack and listed order within datapack
     sorted_rules = [v for k, v in sorted(rules.items(), key=lambda item: priorities[item[0]])]
 
+    # Board
     dimensions = tuple()
     for header in load_order:
         new_dimensions = header.dct.get("board", {}).get("dimensions", None)
@@ -122,7 +123,7 @@ def _should_load(qualname: str, header: DatapackHeader, loaded_names: Collection
     owner, _, name = qualname.rpartition(".")
     if owner == "" or name == "":
         language.print_key("error.datapack.unqualified_name")
-        raise DataError
+        raise DataError("error.datapack.unqualified_name")
 
     if owner in header.dependencies:
         if qualname in loaded_names:
