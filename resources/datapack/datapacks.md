@@ -162,6 +162,9 @@ arrays of sub-restrictions. The disjunction restriction matches if and only if a
 its restrictions match. In other words, the sub-restrictions are `and`ed within each sub-array, and then the sub-arrays
 are `or`ed to yield the final result.
 
+A disjunction restriction with only one sublist in `conjunctions` can be used to group related rules under a single name
+for convenience.
+
 ## Boards
 
 The `dimensions` property defines the dimensions of the board. Any natural number of dimensions can be specified,

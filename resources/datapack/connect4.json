@@ -1,0 +1,54 @@
+{
+  "name": "connect4",
+  "display_name": "Connect 4",
+  "dependencies": [],
+  "load_after": [],
+  "scores": [{"name": "connect4.victory", "threshold": 1}],
+  "restrictions": [
+    {
+      "name": "connect4.top_rows",
+      "type": "pattern",
+      "pattern": ".",
+      "conditions": [{
+        "type": "coords",
+        "axes": [0],
+        "minimum": 2
+      }]
+    }, {
+      "name": "connect4.gravity",
+      "type": "disjunction",
+      "conjunctions": [
+        [{
+          "type": "pattern",
+          "pattern": "[-]-------"
+        }], [{
+          "type": "pattern",
+          "pattern": "#[-]------"
+        }], [{
+          "type": "pattern",
+          "pattern": "##[-]-----"
+        }], [{
+          "type": "pattern",
+          "pattern": "###[-]----"
+        }], [{
+          "type": "pattern",
+          "pattern": "####[-]---"
+        }], [{
+          "type": "pattern",
+          "pattern": "#####[-]--"
+        }]
+      ]
+    }
+  ],
+  "rules": [{
+    "name": "connect4.four_in_a_row",
+    "pattern": "AAAA",
+    "score_actions": [{
+      "player_index": -1,
+      "memo": "connect4.victory",
+      "operation": "set",
+      "value": 1
+    }]
+  }],
+  "board": {"dimensions": [8, 7]}
+}

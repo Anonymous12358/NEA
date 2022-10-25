@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Optional
+from typing import Optional, Self
 
 from pente.game.Board import Board, EMPTY
 from pente.game.GameState import GameState
@@ -19,6 +19,13 @@ class Game:
         self.__restrictions = restrictions
         self.__rules = rules
         self.winner = None
+
+    @classmethod
+    def from_gamestate(cls, gamestate: GameState, dimensions: tuple[int, ...], scores: Sequence[Score],
+                       restrictions: Sequence[Restriction], rules: Sequence[Rule]) -> Self:
+        result = cls(dimensions, scores, restrictions, rules)
+        result.__gamestate = gamestate
+        return result
 
     @property
     def gamestate(self):

@@ -4,6 +4,7 @@ The command line interface
 
 import getpass
 import inspect
+from functools import partial
 
 from pente.account import accounts
 from pente.cli.CliPlayerOutput import CliPlayerOutput
@@ -13,7 +14,7 @@ from pente.main.Main import Main
 
 class Cli:
     def __init__(self):
-        self.__language = Language(["en_UK"])
+        self.__language = Language(["en_UK"], partial(print, end=""))
         self.__main = Main(self.__language)
         self.__COMMANDS = {
             "help": self.help,
@@ -23,12 +24,15 @@ class Cli:
             "play": self.launch_game,
             "concede": self.concede,
             "move": self.move,
+            "save": self.save,
+            "load": self.load_game,
             "exit": self.exit
         }
 
     def mainloop(self):
         while True:
-            self.execute_command(*input(">>> ").split(" "))
+            self.__language.print_key("cli.prompt")
+            self.execute_command(*input().split(" "))
 
     def execute_command(self, *words: str):
         command, *args = words
@@ -50,7 +54,8 @@ class Cli:
             print(f"{name} " + " ".join(f"<{param}>" for param in inspect.signature(func).parameters))
 
     def register(self, username: str):
-        password = getpass.getpass(self.__language.resolve_key("cli.login.password_prompt"))
+        self.__language.print_key("cli.login.password_prompt")
+        password = getpass.getpass("")
         if accounts.register(username, password) is None:
             self.__language.print_key("cli.register.duplicate_username")
         else:
@@ -61,7 +66,8 @@ class Cli:
             self.__language.print_key("cli.login.no_space")
             return
 
-        password = getpass.getpass(self.__language.resolve_key("cli.login.password_prompt"))
+        self.__language.print_key("cli.login.password_prompt")
+        password = getpass.getpass("")
         response = self.__main.login(username, password)
         if response is Main.LoginResponse.INCORRECT_DETAILS:
             self.__language.print_key("cli.login.incorrect_details")
@@ -93,7 +99,8 @@ class Cli:
             self.__main.launch_game((CliPlayerOutput(self.__language), CliPlayerOutput(self.__language)))
 
     def concede(self):
-        if input("Concede the game? (y/n) ").lower() != "y":
+        self.__language.print_key("cli.confirm.concede")
+        if input().lower() != "y":
             return
 
         response = self.__main.ui_concede()
@@ -114,6 +121,22 @@ class Cli:
         elif response is Main.MoveResponse.ILLEGAL:
             self.__language.print_key("cli.move.illegal")
 
+    def save(self):
+        file_name = self.__main.save()
+        if file_name is not None:
+            self.__language.print_key("cli.save_game.success", file_name=file_name)
+        else:
+            self.__language.print_key("cli.save_game.no_game")
+
+    def load_game(self, file_name: str):
+        response = self.__main.load_game((CliPlayerOutput(self.__language), CliPlayerOutput(self.__language)),
+                                         file_name)
+        if response is Main.LaunchGameResponse.ALREADY_PLAYING:
+            self.__language.print_key("cli.launch.already_playing")
+        elif response is Main.LaunchGameResponse.NO_DATA:
+            self.__language.print_key("cli.launch.no_data")
+
     def exit(self):
-        if input("Exit the application? (y/n) ").lower() == "y":
+        self.__language.print_key("cli.confirm.exit")
+        if input().lower() == "y":
             raise SystemExit

@@ -2,11 +2,12 @@
 Manages the loading of language files and the processing of output
 """
 
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 
 
 class Language:
-    def __init__(self, languages: Collection[str]):
+    def __init__(self, languages: Collection[str], print_fun: Callable[[str], None]):
+        self.__print_fun = print_fun
         self.__lang_dict = {}
         for name in languages:
             self.__load_file(name)
@@ -29,14 +30,22 @@ class Language:
                 continue
 
             key, sep, value = line.strip().partition("=")
+            if value.endswith("^"):
+                should_append_newline = False
+                value = value[:-1]
+            else:
+                should_append_newline = True
             if value.startswith("\"") and value.endswith("\""):
                 value = value[1:-1]
+            if should_append_newline:
+                value += "\n"
+
             if sep == "":
                 self.print_key("warning.lang.bad_line", line=key)
             else:
                 self.__lang_dict[key] = value
 
-    def resolve_key(self, key: str, **kwargs: str) -> str:
+    def resolve_key(self, key: str, /, **kwargs: str) -> str:
         if key in self.__lang_dict:
             string = self.__lang_dict[key]
             for param, value in kwargs.items():
@@ -46,7 +55,7 @@ class Language:
             params = " ".join(f"{param}={value}" for param, value in kwargs.items())
             return f"{key} {params}"
 
-    def print_key(self, key: str, **kwargs: str):
+    def print_key(self, key: str, /, **kwargs: str):
         string = self.resolve_key(key, **kwargs)
 
         prefix, _, _ = key.partition(".")
@@ -55,4 +64,4 @@ class Language:
         elif prefix == "warning":
             string = self.resolve_key(".warning") + string
 
-        print(string)
+        self.__print_fun(string)

@@ -1,36 +1,37 @@
 """
 Interfaces between the UI and the features, delegating UI requests to the appropriate class
 """
-
+import json
+from datetime import datetime
 from enum import Enum, auto
+from pathlib import Path
 from typing import Optional, Sequence
 
 from pente.account import accounts
-from pente.data import data
+from pente.data import data, load_gamestate
 from pente.data.Language import Language
 from pente.data.data import Data
 from pente.data.deserialize import DataError
 from pente.game.Game import Game
+from pente.game.GameState import GameState
 from pente.main.PlayerOutput import PlayerOutput
 
 
 class _ResponseEnum(Enum):
     # so/73492285
-    # TODO Rewrite this more neatly once 3.11 adds `__post_init__`
     """
     Response enums are used to represent to the UI what happened in the Main when the request was made
     """
 
-    def __init__(self, *args):
-        if self.name != 'OK' and 'OK' not in self.__class__.__members__:
-            raise ValueError("Response enum must have OK as the first element")
+    def __init_subclass__(cls, **kwargs):
+        if 'OK' not in cls.__members__:
+            raise ValueError("Response enum must have an OK element")
 
     def __bool__(self):
         return self == self.__class__.OK
 
 
-# TODO Rationalise this class. Do we need this and a separate supergame? Or only a supergame, leaving the rest in Cli?
-# And should it be called Main?
+# TODO Rename this class
 class Main:
     class GameMode(Enum):
         HOTSEAT = auto()  # Two players using the same UI
@@ -41,9 +42,11 @@ class Main:
     def __init__(self, language: Language):
         self.__language: Language = language
         self.__data: Optional[Data] = None
+        self.__pack_names: Sequence[str] = []
         self.__accounts: list[str] = []
 
         self.__game: Optional[Game] = None
+        self.__game_pack_names: Sequence[str] = []
         self.__mode: Optional[Main.GameMode] = None
         self.__player_outputs: Optional[tuple[PlayerOutput, PlayerOutput]] = None
 
@@ -73,6 +76,8 @@ class Main:
             self.__data = data.load_packs(names, self.__language)
         except DataError:
             return False
+
+        self.__pack_names = names
 
         return True
 
@@ -105,16 +110,19 @@ class Main:
             return Main.LaunchGameResponse.NO_DATA
         return Main.LaunchGameResponse.OK
 
-    def launch_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput]) -> LaunchGameResponse:
+    def launch_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], gamestate: Optional[GameState] = None
+                    ) -> LaunchGameResponse:
         can = self.can_launch_game()
         if not can:
             return can
 
-        # TODO When more player outputs exist, blablabla
         self.__player_outputs = player_outputs
+        # TODO When more player outputs exist, set the mode correctly
         self.__mode = Main.GameMode.HOTSEAT
 
-        self.__game = self.__data.to_game()
+        self.__game_pack_names = self.__pack_names
+
+        self.__game = self.__data.to_game(gamestate)
         self.__update_players()
         return Main.LaunchGameResponse.OK
 
@@ -169,3 +177,29 @@ class Main:
             self.__end_game()
         else:
             self.__update_players()
+
+    def save(self, name: Optional[str] = None) -> Optional[str]:
+        if self.__game is None:
+            return None
+
+        if name is None:
+            name = datetime.now().strftime('saves/%Y-%m-%dT%H-%M-%S.%f.json')
+        save = self.__game.gamestate.to_dict()
+        save["datapacks"] = self.__game_pack_names
+        save["accounts"] = self.__accounts
+
+        Path("saves").mkdir(parents=True, exist_ok=True)
+        with open(name, 'w') as file:
+            file.write(json.dumps(save))
+
+        return name
+
+    def load_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], file_name: str) -> LaunchGameResponse:
+        try:
+            gamestate, dct = load_gamestate.load_gamestate(self.__language, file_name)
+        except load_gamestate.LoadGameStateError:
+            return Main.LaunchGameResponse.NO_DATA
+
+        self.load_data(dct["datapacks"])
+
+        return self.launch_game(player_outputs, gamestate)

@@ -1,6 +1,7 @@
 import itertools
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Self
 
 import numpy as np
 
@@ -48,6 +49,20 @@ class Board:
             result += "-" if tile == EMPTY else chr(tile + 48)
 
         return result
+
+    def to_list(self):
+        return self.__data.tolist()
+
+    @staticmethod
+    def from_list(lst: list) -> Self:
+        array = np.array(lst)
+        # Don't allow ragged arrays
+        if array.dtype.kind == 'O':
+            raise ValueError
+
+        board = Board(array.shape)
+        board.__data = array
+        return board
 
     def get_lines(self, centre: tuple[int, ...]) -> list[Line]:
         """

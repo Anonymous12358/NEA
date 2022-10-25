@@ -1,0 +1,42 @@
+title: Save
+description: >-
+  This schema validates saved games when loading them into memory. Editing this file may cause saved games not to load
+  properly.
+$schema: "https://json-schema.org/draft/2020-12/schema"
+type: object
+properties:
+  board:
+    "$ref": "#/$defs/board"
+  num_players:
+    type: integer
+    minimum: 1
+    default: 2
+  scores:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: integer
+  active_player:
+    type: integer
+    minimum: 0
+  datapacks:
+    type: array
+    items:
+      type: string
+required:
+  - board
+  - scores
+  - active_player
+  - datapacks
+$defs:
+  board:
+    anyOf:
+      -
+        type: array
+        items:
+          type: integer
+      -
+        type: array
+        items:
+          "$ref": "#/$defs/board"

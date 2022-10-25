@@ -19,8 +19,8 @@ properties:
     uniqueItems: true
   load_after:
     description: >-
-      A list of names of datapacks that must load before this if they are present
-      Datapacks should not be specified as both dependencies and load_afters
+      A list of names of datapacks that must load before this if they are present.
+      Datapacks should not be specified as both dependencies and load_afters.
     type: array
     items:
       type: string
@@ -32,10 +32,10 @@ properties:
       properties:
         name:
           description: >-
-            The name, or memo, of this type of score, used to refer to it within this and other datapacks
-            Memos should be qualified with the name of the datapack that introduces them, using a "."
-            Memos qualified with the name of a different datapack are treated as overrides, and are only loaded if a score
-            of this name was loaded by the other datapack first
+            The name, or memo, of this type of score, used to refer to it within this and other datapacks.
+            Memos should be qualified with the name of the datapack that introduces them, using a ".".
+            Memos qualified with the name of a different datapack are treated as overrides, and are only loaded if a
+            score of this name was loaded by the other datapack first.
           type: string
         display_name:
           description: "The name to display to the user during gameplay. If absent, the score will not be displayed."
@@ -79,12 +79,12 @@ properties:
           maxItems: 2
           items:
             description: >-
-              The behaviour of one end of the board when a line would reach this end
-              "stop":   The line stops at this point as normal
-              "reverse: The line travels back in the opposite direction to that in which it was travelling
-              "loop":   The line is reflected about the perpendicular bisector of this end of the board
-              "return": The line is teleported to the corresponding position on the opposite end of the board, and
-                        continues in the same direction
+              The behaviour of one end of the board when a line would reach this end.
+              - "stop":   The line stops at this point as normal
+              - "reverse: The line travels back in the opposite direction to that in which it was travelling.
+              - "loop":   The line is reflected about the perpendicular bisector of this end of the board.
+              - "return": The line is teleported to the corresponding position on the opposite end of the board, and
+                          continues in the same direction.
             type: string
             enum:
               - "stop"
@@ -102,8 +102,8 @@ $defs:
         properties:
           name:
             description: >-
-              The name of this restriction, used to refer to it in other datapacks
-              For restrictions that are children of other restrictions, names are optional and aren't loaded
+              The name of this restriction, used to refer to it in other datapacks/
+              For restrictions that are children of other restrictions, names are optional and aren't loaded/
               For top-level restrictions, names are required.
               Names of top-level restrictions should be qualified with the name of the datapack that introduces them,
               using a ".". Names qualified with the name of a different datapack are treated as overrides, and are only
@@ -130,8 +130,8 @@ $defs:
         properties:
           name:
             description: >-
-              The name of this restriction, used to refer to it in other datapacks
-              For restrictions that are children of other restrictions, names are optional and aren't loaded
+              The name of this restriction, used to refer to it in other datapacks/
+              For restrictions that are children of other restrictions, names are optional and aren't loaded/
               For top-level restrictions, names are required.
               Names of top-level restrictions should be qualified with the name of the datapack that introduces them,
               using a ".". Names qualified with the name of a different datapack are treated as overrides, and are only
@@ -161,7 +161,7 @@ $defs:
           - type
           - pattern
   pattern:
-    description: "See the documentation for pattern syntax"
+    description: "See datapacks.md for pattern syntax"
     type: string
   condition:
     anyOf:
@@ -175,10 +175,10 @@ $defs:
             const: "score"
           player_index:
             description: >-
-              Determines which player to use the score of
-              0 or more: Use the player who owns the stone at that position in the match
-              -1:        Use the center of the match
-              -2:        Use the active player
+              Determines which player to use the score of.
+              - 0 or more: Use the player who owns the stone at that position in the match.
+              - -1:        Use the center of the match.
+              - -2:        Use the active player.
             type: integer
             minimum: -2
           memo:
@@ -186,14 +186,14 @@ $defs:
             type: string
           minimum:
             description: >-
-              If present, the minimum value for the score
-              At least one of minimum and maximum must be specified
+              If present, the minimum value for the score.
+              At least one of minimum and maximum must be specified.
             type: integer
             minimum: 0
           maximum:
             description: >-
-              If present, the maximum value for the score
-              At least one of minimum and maximum must be specified
+              If present, the maximum value for the score.
+              At least one of minimum and maximum must be specified.
             type: integer
             minimum: 0
         required:
@@ -217,14 +217,14 @@ $defs:
               minimum: 0
           minimum:
             description: >-
-              If present, the minimum value for each ordinate in each dimension that the condition applies in
-              At least one of minimum and maximum must be specified
+              If present, the minimum value for each ordinate in each dimension in which the condition applies.
+              At least one of minimum and maximum must be specified.
             type: integer
             minimum: 0
           maximum:
             description: >-
-              If present, the maximum value for each ordinate in each dimension that the condition applies in
-              At least one of minimum and maximum must be specified
+              If present, the maximum value for each ordinate in each dimension in which the condition applies.
+              At least one of minimum and maximum must be specified.
             type: integer
             minimum: 0
         required:
@@ -235,10 +235,10 @@ $defs:
     properties:
       player_index:
         description: >-
-          Determines which player to use the score of
-          0 or more: Use the player who owns the stone at that position in the match
-          -1:        Use the center of the match
-          -2:        Use the active player
+          Determines which player to use the score of.
+          - 0 or more: Use the player who owns the stone at that position in the match.
+          - -1:        Use the center of the match.
+          - -2:        Use the active player.
         type: integer
       memo:
         description: "The type of score to use"
@@ -263,18 +263,18 @@ $defs:
     properties:
       player_index:
         description: >-
-          Determines which player's piece should be placed / replace the piece currently there
-          0 or more: Use the player who owns the stone at that position in the match
-          -1:        Use the center of the match
-          -2:        Use the active player
-          -3:        Instead of placing a piece, remove one
+          Determines which player's piece should be placed or replace the piece currently there.
+          - 0 or more: Use the player who owns the stone at that position in the match.
+          - -1:        Use the center of the match.
+          - -2:        Use the active player.
+          - -3:        Instead of placing a piece, remove one.
         type: integer
         minimum: -3
       location_index:
         description: >-
-          The index of the location to modify
-          0 or more: Modify that location in the match
-          -1:        Modify the centre of the match
+          The index of the location to modify.
+          - 0 or more: Modify that location in the match.
+          - -1:        Modify the centre of the match.
         type: integer
         minimum: -1
     required:
@@ -286,16 +286,16 @@ $defs:
     properties:
       name:
         description: >-
-          The name of this rule, used to refer to it in other datapacks
-          Names should be qualified with the name of the datapack that introduces them, using a "."
+          The name of this rule, used to refer to it in other datapacks.
+          Names should be qualified with the name of the datapack that introduces them, using a ".".
           Names qualified with the name of a different datapack are treated as overrides, and are only loaded if a rule
-          of this name was loaded by the other datapack first
+          of this name was loaded by the other datapack first.
         type: string
       priority:
         description: >-
-          Defines the order in which rules should be applied
+          Defines the order in which rules should be applied.
           Rules are first ordered by priority; then within each priority bracket, by the order in which the datapacks
-          were loaded; then within each datapack, by the order in which the rules are listed
+          were loaded; then within each datapack, by the order in which the rules are listed.
         type: string
         enum:
           - "earliest"
@@ -312,10 +312,10 @@ $defs:
       multimatch_mode:
         description: >-
           The behaviour if the rule would apply to multiple lines from the same event.
-          "one":  Only the first application occurs
-          "half": If both a line and its reverse satisfy the pattern and conditions, the rule will only apply to the
-                  first of that pair
-          "all":  The rule will apply to every applicable line
+          - "one":  Only the first application occurs.
+          - "half": If both a line and its reverse satisfy the pattern and conditions, the rule will only apply to the
+                    first of that pair.
+          - "all":  The rule will apply to every applicable line.
         type: string
         enum:
           - "one"
@@ -330,8 +330,8 @@ $defs:
         default: [ ]
       score_actions:
         description: >-
-          A list of actions operating on player scores to be performed if the pattern and conditions are satisfied
-          All score actions are performed in the order specified, then all board actions are performed
+          A list of actions operating on player scores to be performed if the pattern and conditions are satisfied.
+          All score actions are performed in the order specified, then all board actions are performed.
         type: array
         items:
           "$ref": "#/$defs/score_action"

@@ -8,6 +8,7 @@ import itertools
 import json
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass
+from typing import Optional
 
 import jsonschema as jsonschema
 import networkx as nx
@@ -17,6 +18,7 @@ from pente.data import deserialize
 from pente.data.deserialize import DataError
 from pente.data.Language import Language
 from pente.game.Game import Game
+from pente.game.GameState import GameState
 from pente.game.Score import Score
 from pente.game.rule.Restriction import Restriction
 from pente.game.rule.Rule import Rule
@@ -30,8 +32,11 @@ class Data:
     rules: list[Rule]
     dimensions: tuple[int, ...]
 
-    def to_game(self) -> Game:
-        return Game(self.dimensions, self.scores, self.restrictions, self.rules)
+    def to_game(self, gamestate: Optional[GameState] = None) -> Game:
+        if gamestate is None:
+            return Game(self.dimensions, self.scores, self.restrictions, self.rules)
+        else:
+            return Game.from_gamestate(gamestate, self.dimensions, self.scores, self.restrictions, self.rules)
 
 
 @dataclass(frozen=True)
@@ -152,6 +157,9 @@ def _load_schema(language: Language) -> dict:
     try:
         with open("resources/datapack/schema.yml", 'r') as schema_file:
             return yaml.safe_load(schema_file)
+    except yaml.scanner.ScannerError:
+        language.print_key("error.datapack.invalid_schema")
+        raise
     except (FileNotFoundError, PermissionError):
         language.print_key("error.file_absent.datapack_schema")
         raise
@@ -240,12 +248,13 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
     # Get the datapack
     try:
         with open(f"resources/datapack/{name}.json", 'r') as file:
-            try:
-                dct = json.load(file)
-            except json.JSONDecodeError:
-                language.print_key("error.datapack.invalid_json", pack=name)
-                # TODO Is it worth crashing out of the program or should this error be caught again further up?
-                raise
+            dct = json.load(file)
+    except json.JSONDecodeError:
+        language.print_key("error.datapack.invalid_json", pack=name)
+        # TODO Is it worth crashing out of the program or should this error be caught again further up?
+        # Likewise for filenotfound below and equivalent in save_schema.yml
+        # It's useful to see stack traces but we don't need to crash
+        raise
     except (FileNotFoundError, PermissionError):
         language.print_key("error.datapack.datapack_absent", pack=name)
         raise
