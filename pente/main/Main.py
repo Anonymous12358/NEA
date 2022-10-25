@@ -54,6 +54,10 @@ class Main:
         self.__mode: Optional[Main.GameMode] = None
         self.__player_outputs: Optional[tuple[PlayerOutput, PlayerOutput]] = None
 
+    @property
+    def accounts(self) -> tuple[str]:
+        return tuple(self.__accounts)
+
     class LoginResponse(_ResponseEnum):
         OK = auto()
         NO_SPACE = auto()
@@ -74,6 +78,12 @@ class Main:
 
         self.__accounts.append(username)
         return Main.LoginResponse.OK
+
+    def logout(self, username: str) -> bool:
+        if username not in self.__accounts:
+            return False
+
+        self.__accounts.remove(username)
 
     def load_data(self, names: Sequence[str]) -> bool:
         try:
@@ -110,18 +120,12 @@ class Main:
         ALREADY_PLAYING = auto()
         NO_DATA = auto()
 
-    def can_launch_game(self) -> LaunchGameResponse:
+    def launch_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], gamestate: Optional[GameState] = None
+                    ) -> LaunchGameResponse:
         if self.__game is not None:
             return Main.LaunchGameResponse.ALREADY_PLAYING
         if self.__data is None:
             return Main.LaunchGameResponse.NO_DATA
-        return Main.LaunchGameResponse.OK
-
-    def launch_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], gamestate: Optional[GameState] = None
-                    ) -> LaunchGameResponse:
-        can = self.can_launch_game()
-        if not can:
-            return can
 
         self.__player_outputs = player_outputs
         # TODO When more player outputs exist, set the mode correctly
@@ -159,7 +163,7 @@ class Main:
         else:
             return self.__game.next_player
 
-    def can_ui_move(self, coords: tuple[int, ...]) -> MoveResponse:
+    def ui_move(self, coords: tuple[int, ...]) -> MoveResponse:
         if self.__game is None:
             return Main.MoveResponse.NO_GAME
 
@@ -168,12 +172,6 @@ class Main:
 
         if not self.__game.can_place(coords):
             return Main.MoveResponse.ILLEGAL
-        return Main.MoveResponse.OK
-
-    def ui_move(self, coords: tuple[int, ...]) -> MoveResponse:
-        can = self.can_ui_move(coords)
-        if not can:
-            return can
 
         if self.should_autosave:
             self.save("autosave")

@@ -36,19 +36,8 @@ class Board:
             raise ValueError(f"Invalid value {value} should be at least 0 or be {EMPTY}")
         self.__data[coords] = value
 
-    def __str__(self):
-        result = ""
-        for coords, tile in np.ndenumerate(self.__data):
-            # Add new lines when moving in dimensions beyond the first
-            if any(coords):
-                for ordinate in coords[::-1]:
-                    if ordinate == 0:
-                        result += "\n"
-                    else:
-                        break
-            result += "-" if tile == EMPTY else chr(tile + 48)
-
-        return result
+    def enumerate(self):
+        return np.ndenumerate(self.__data)
 
     def to_list(self):
         return self.__data.tolist()

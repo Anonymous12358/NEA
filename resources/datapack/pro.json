@@ -42,8 +42,8 @@
             }, {
               "type": "coords",
               "axes": [0, 1],
-              "minimum": 8,
-              "maximum": 12
+              "minimum": 7,
+              "maximum": 11
             }],
             "negate": true
           },
@@ -66,8 +66,8 @@
                 "conditions": [{
                   "type": "coords",
                   "axes": [0, 1],
-                  "minimum": 10,
-                  "maximum": 10
+                  "minimum": 9,
+                  "maximum": 9
                 }]
               }]
             ]

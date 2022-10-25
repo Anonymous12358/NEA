@@ -1,3 +1,7 @@
+"""
+Functions for loading saved games to produce gamestates
+"""
+
 import json
 
 import jsonschema

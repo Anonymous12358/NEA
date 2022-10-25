@@ -13,6 +13,8 @@ class _Account(peewee.Model):
     username = peewee.CharField(max_length=31)
     salt = peewee.BlobField()
     hash_ = peewee.BlobField()
+    # The payload for the ANSI escape to set the color
+    color = peewee.CharField(max_length=31)
 
     class Meta:
         database = db
@@ -29,7 +31,7 @@ def register(username: str, password: str) -> Optional[uuid.UUID]:
     salt = secrets.token_bytes(8)
     hash_ = hashlib.sha256(bytes(password, 'utf-8') + salt).digest()
 
-    _Account.create(id=user_id, username=username, salt=salt, hash_=hash_)
+    _Account.create(id=user_id, username=username, salt=salt, hash_=hash_, color='0')
     return user_id
 
 
@@ -46,3 +48,14 @@ def login(username: str, password: str) -> bool:
 
 def delete(username: str):
     _Account.delete().where(_Account.username == username).execute()
+
+
+def get_color(username: str) -> str:
+    account = _Account.get(_Account.username == username)
+    return account.color
+
+
+def set_color(username: str, color: str):
+    account = _Account.get(_Account.username == username)
+    account.color = color
+    account.save()

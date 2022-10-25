@@ -82,7 +82,8 @@ properties:
               The behaviour of one end of the board when a line would reach this end.
               - "stop":   The line stops at this point as normal
               - "reverse: The line travels back in the opposite direction to that in which it was travelling.
-              - "loop":   The line is reflected about the perpendicular bisector of this end of the board.
+              - "loop":   The line is reflected about the perpendicular bisector of this end of the board before
+                          reversing.
               - "return": The line is teleported to the corresponding position on the opposite end of the board, and
                           continues in the same direction.
             type: string

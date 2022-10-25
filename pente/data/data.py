@@ -1,5 +1,5 @@
 """
-Loads a provided list of datapacks to construct a set of rules
+Functions for loading datapacks and constructing sets of rules
 """
 
 from __future__ import annotations

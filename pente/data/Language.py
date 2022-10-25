@@ -6,8 +6,8 @@ from collections.abc import Callable, Collection
 
 
 class Language:
-    def __init__(self, languages: Collection[str], print_fun: Callable[[str], None]):
-        self.__print_fun = print_fun
+    def __init__(self, languages: Collection[str], print_func: Callable[[str], None]):
+        self.__print_fun = print_func
         self.__lang_dict = {}
         for name in languages:
             self.__load_file(name)

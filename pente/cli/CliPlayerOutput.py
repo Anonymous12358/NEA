@@ -4,17 +4,21 @@ Implementation of PlayerOutput for the command line
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pente.data.Language import Language
+from pente.game.Board import Board, EMPTY
 from pente.game.Game import Game
 from pente.main.PlayerOutput import PlayerOutput
 
 
 class CliPlayerOutput(PlayerOutput):
-    def __init__(self, language: Language):
+    def __init__(self, language: Language, colors: tuple[str, str]):
         self.__language = language
+        self.__colors = colors
 
     def update(self, game: Game, your_index: int, is_hotseat: bool):
-        print(game.gamestate.board)
+        print(self.stringify_board(game.gamestate.board))
 
         displayable_scores = game.get_displayable_scores()
         if len(displayable_scores) == 1:
@@ -38,4 +42,30 @@ class CliPlayerOutput(PlayerOutput):
         else:
             self.__language.print_key("cli.output.victory.you")
 
-        print(game.gamestate.board)
+        print(self.stringify_board(game.gamestate.board))
+
+    def stringify_board(self, board: Board):
+        result = ""
+        for coords, tile in board.enumerate():
+            # Add new lines when moving in dimensions beyond the first
+            if any(coords):
+                for ordinate in coords[::-1]:
+                    if ordinate == 0:
+                        result += "\n"
+                    else:
+                        break
+
+            if tile == EMPTY:
+                if result and result[-1] == "-":
+                    result += "-"
+                else:
+                    result += '\x1b[0m-'
+            else:
+                char = chr(tile + 48)
+                if result and result[-1] == char:
+                    result += char
+                else:
+                    result += f'\x1b[{self.__colors[tile]}m{chr(tile + 48)}'
+
+        result += '\x1b[0m'
+        return result
