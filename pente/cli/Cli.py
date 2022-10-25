@@ -26,6 +26,8 @@ class Cli:
             "move": self.move,
             "save": self.save,
             "load": self.load_game,
+            "autosave": self.toggle_autosave,
+            "undo": self.undo,
             "exit": self.exit
         }
 
@@ -135,6 +137,20 @@ class Cli:
             self.__language.print_key("cli.launch.already_playing")
         elif response is Main.LaunchGameResponse.NO_DATA:
             self.__language.print_key("cli.launch.no_data")
+
+    def toggle_autosave(self):
+        self.__main.should_autosave = not self.__main.should_autosave
+        mode = self.__language.resolve_key("cli.toggle_autosave." + ("on" if self.__main.should_autosave else "off"))
+        self.__language.print_key("cli.toggle_autosave.success", mode=mode)
+
+    def undo(self):
+        response = self.__main.undo()
+        if response is Main.UndoResponse.AUTOSAVING_OFF:
+            self.__language.print_key("cli.undo.autosaving_off")
+        elif response is Main.UndoResponse.NO_GAME:
+            self.__language.print_key("cli.undo.no_game")
+        elif response is Main.UndoResponse.NO_DATA:
+            self.__language.print_key("cli.undo.no_data")
 
     def exit(self):
         self.__language.print_key("cli.confirm.exit")

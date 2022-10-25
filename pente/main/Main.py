@@ -2,10 +2,14 @@
 Interfaces between the UI and the features, delegating UI requests to the appropriate class
 """
 import json
+import traceback
 from datetime import datetime
 from enum import Enum, auto
+from json import JSONDecodeError
 from pathlib import Path
 from typing import Optional, Sequence
+
+from yaml.scanner import ScannerError
 
 from pente.account import accounts
 from pente.data import data, load_gamestate
@@ -18,11 +22,11 @@ from pente.main.PlayerOutput import PlayerOutput
 
 
 class _ResponseEnum(Enum):
-    # so/73492285
     """
     Response enums are used to represent to the UI what happened in the Main when the request was made
     """
 
+    # so/73492285
     def __init_subclass__(cls, **kwargs):
         if 'OK' not in cls.__members__:
             raise ValueError("Response enum must have an OK element")
@@ -31,7 +35,6 @@ class _ResponseEnum(Enum):
         return self == self.__class__.OK
 
 
-# TODO Rename this class
 class Main:
     class GameMode(Enum):
         HOTSEAT = auto()  # Two players using the same UI
@@ -44,6 +47,7 @@ class Main:
         self.__data: Optional[Data] = None
         self.__pack_names: Sequence[str] = []
         self.__accounts: list[str] = []
+        self.should_autosave = False
 
         self.__game: Optional[Game] = None
         self.__game_pack_names: Sequence[str] = []
@@ -74,6 +78,9 @@ class Main:
     def load_data(self, names: Sequence[str]) -> bool:
         try:
             self.__data = data.load_packs(names, self.__language)
+        except (ScannerError, JSONDecodeError, FileNotFoundError, PermissionError):
+            traceback.print_exc()
+            return False
         except DataError:
             return False
 
@@ -167,6 +174,10 @@ class Main:
         can = self.can_ui_move(coords)
         if not can:
             return can
+
+        if self.should_autosave:
+            self.save("autosave")
+
         self.__move(self.__get_ui_player(), coords)
         return Main.MoveResponse.OK
 
@@ -183,7 +194,8 @@ class Main:
             return None
 
         if name is None:
-            name = datetime.now().strftime('saves/%Y-%m-%dT%H-%M-%S.%f.json')
+            name = datetime.now().strftime('%Y-%m-%dT%H-%M-%S.%f')
+        name = f"saves/{name}.json"
         save = self.__game.gamestate.to_dict()
         save["datapacks"] = self.__game_pack_names
         save["accounts"] = self.__accounts
@@ -197,9 +209,43 @@ class Main:
     def load_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], file_name: str) -> LaunchGameResponse:
         try:
             gamestate, dct = load_gamestate.load_gamestate(self.__language, file_name)
+        except (ScannerError, JSONDecodeError, FileNotFoundError, PermissionError):
+            traceback.print_exc()
+            return Main.LaunchGameResponse.NO_DATA
         except load_gamestate.LoadGameStateError:
             return Main.LaunchGameResponse.NO_DATA
 
-        self.load_data(dct["datapacks"])
+        if dct["datapacks"] != self.__pack_names:
+            self.load_data(dct["datapacks"])
 
         return self.launch_game(player_outputs, gamestate)
+
+    class UndoResponse(_ResponseEnum):
+        OK = auto()
+        NO_GAME = auto()
+        AUTOSAVING_OFF = auto()
+        NO_DATA = auto()
+
+    def undo(self) -> UndoResponse:
+        """
+        Silently end the current game and replace it with the autosave, while keeping the same player outputs
+        """
+        if not self.should_autosave:
+            return Main.UndoResponse.AUTOSAVING_OFF
+        previous_game = self.__game
+        if previous_game is None:
+            return Main.UndoResponse.NO_GAME
+        self.__game = None
+
+        try:
+            load_response = self.load_game(self.__player_outputs, "autosave")
+
+        except RuntimeError:
+            self.__game = previous_game
+            raise
+        # launch_game will never return ALREADY_PLAYING since we set self.__game = None
+        if load_response is Main.LaunchGameResponse.NO_DATA:
+            self.__game = previous_game
+            return Main.UndoResponse.NO_DATA
+
+        return Main.UndoResponse.OK

@@ -251,9 +251,6 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
             dct = json.load(file)
     except json.JSONDecodeError:
         language.print_key("error.datapack.invalid_json", pack=name)
-        # TODO Is it worth crashing out of the program or should this error be caught again further up?
-        # Likewise for filenotfound below and equivalent in save_schema.yml
-        # It's useful to see stack traces but we don't need to crash
         raise
     except (FileNotFoundError, PermissionError):
         language.print_key("error.datapack.datapack_absent", pack=name)

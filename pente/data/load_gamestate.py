@@ -14,14 +14,14 @@ class LoadGameStateError(RuntimeError):
 
 def load_gamestate(language: Language, file_name: str) -> tuple[GameState, dict]:
     try:
-        with open(f"saves/{file_name}", 'r') as file:
+        with open(f"saves/{file_name}.json", 'r') as file:
             dct = json.loads(file.read())
     except json.JSONDecodeError:
         language.print_key("error.load_game.invalid_json")
-        raise LoadGameStateError("error.load_game.invalid_json")
+        raise
     except (FileNotFoundError, PermissionError):
         language.print_key("error.load_game.game_file_absent")
-        raise LoadGameStateError("error.load_game.game_file_absent")
+        raise
 
     schema = _load_schema(language)
     try:
@@ -40,6 +40,10 @@ def load_gamestate(language: Language, file_name: str) -> tuple[GameState, dict]
         raise LoadGameStateError("error.load_game.invalid_board")
 
     num_players = dct.get("num_players", 2)
+    if num_players != 2:
+        language.print_key("warning.load_game.invalid_num_players")
+        num_players = 2
+
     scores = dct["scores"]
     if not all(len(score_list) == num_players for score_list in scores.values()):
         language.print_key("error.load_game.invalid_scores")
