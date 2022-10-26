@@ -76,7 +76,7 @@ class Pattern:
                         return False
                 # Variables must not represent their inverse
                 elif char.isupper():
-                    if char.lower() in lower_representees and tile in lower_representees[char]:
+                    if char.lower() in lower_representees and tile in lower_representees[char.lower()]:
                         return False
                     variables[char] = tile
                 # Variables must not represent their inverse

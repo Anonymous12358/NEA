@@ -36,6 +36,9 @@ class Board:
             raise ValueError(f"Invalid value {value} should be at least 0 or be {EMPTY}")
         self.__data[coords] = value
 
+    def get_tiles(self):
+        return self.__data.copy()
+
     def enumerate(self):
         return np.ndenumerate(self.__data)
 
@@ -59,15 +62,23 @@ class Board:
         :param centre: The coordinates of the center
         :returns: A list of tuples of the index of the center in each line, and the line itself
         """
+        return self.get_lines_on(self.__data, centre)
+
+    @staticmethod
+    def get_lines_on(darray: np.ndarray, centre: tuple[int, ...]) -> list[Line]:
+        """
+        Get all lines, orthogonal or diagonal in any number of dimensions, through a given center on a given array
+        :param darray: The array in which to find lines
+        :param centre: The coordinates of the center
+        :returns: A list of tuples of the index of the center in each line, and the line itself
+        """
         
-        if len(centre) != self.__data.ndim:
+        if len(centre) != darray.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
 
-        # Data array, ie the board itself
-        darray = self.__data
         # Create an array of indexes so we can tell where the returned tiles came from
         # The 0th dimension ranges over dimensions of the board
-        iarray = np.indices(self.__data.shape)
+        iarray = np.indices(darray.shape)
 
         result = []
 
@@ -95,11 +106,11 @@ class Board:
             # Transform centre coordinates so that they are coordinates into the transformed array
             transformed_centre = tuple(
                 length-1 - ordinate if direction == -1 else ordinate
-                for length, ordinate, direction in zip(self.__data.shape, centre, directs)
+                for length, ordinate, direction in zip(darray.shape, centre, directs)
             )
 
             # end_distances are the distances from the center to the end of the transformed array in each dimension
-            end_distances = [length-1 - ordinate for length, ordinate in zip(self.__data.shape, transformed_centre)]
+            end_distances = [length-1 - ordinate for length, ordinate in zip(darray.shape, transformed_centre)]
 
             # The position of the center in the line is the minimum ordinate for a dimension in which the line travels
             min_ordinate = min(itertools.compress(transformed_centre, [direction != 0 for direction in directs]))

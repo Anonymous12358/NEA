@@ -46,12 +46,25 @@ class CliPlayerOutput(PlayerOutput):
 
     def stringify_board(self, board: Board):
         result = ""
+        # Column numbers
+        if len(board.dimensions) <= 2:
+            result += " "
+            for i in range(board.dimensions[-1]):
+                result += str(i % 10)
+            result += "\n"
+        # Row numbers
+        if len(board.dimensions) == 2:
+            result += "0"
+
         for coords, tile in board.enumerate():
             # Add new lines when moving in dimensions beyond the first
             if any(coords):
                 for ordinate in coords[::-1]:
                     if ordinate == 0:
                         result += "\n"
+                        # Row numbers
+                        if len(board.dimensions) == 2:
+                            result += str(coords[0] % 10)
                     else:
                         break
 

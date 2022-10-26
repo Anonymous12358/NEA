@@ -15,6 +15,10 @@ class GameState:
     def __post_init__(self, memos: list[str]):
         self.scores = {memo: [0] * self.num_players for memo in memos}
 
+    @property
+    def next_player(self):
+        return (self.active_player + 1) % self.num_players
+
     def to_dict(self):
         result = {"board": self.board.to_list(),
                   "num_players": self.num_players,

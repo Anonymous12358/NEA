@@ -80,18 +80,19 @@ properties:
           items:
             description: >-
               The behaviour of one end of the board when a line would reach this end.
-              - "stop":   The line stops at this point as normal
-              - "reverse: The line travels back in the opposite direction to that in which it was travelling.
-              - "loop":   The line is reflected about the perpendicular bisector of this end of the board before
-                          reversing.
-              - "return": The line is teleported to the corresponding position on the opposite end of the board, and
-                          continues in the same direction.
+              - "stop":    The line stops at this point as normal
+              - "reverse": The line travels back in the opposite direction to that in which it was travelling.
+              - "return":  The line is teleported to the corresponding position on the opposite end of the board, and
+                           continues in the same direction.
+              - "loop-*":  The line is reflected about the perpendicular bisector of this end of the board before
+                           either reversing or returning as appropriate.
             type: string
             enum:
               - "stop"
-              - "reverse"
               - "loop"
               - "return"
+              - "loop-reverse"
+              - "loop-return"
 required:
 - name
 $defs:

@@ -2,6 +2,7 @@
 Interfaces between the UI and the features, delegating UI requests to the appropriate class
 """
 import json
+import random
 import traceback
 from datetime import datetime
 from enum import Enum, auto
@@ -12,6 +13,7 @@ from typing import Optional, Sequence
 from yaml.scanner import ScannerError
 
 from pente.account import accounts
+from pente.ai import ai
 from pente.data import data, load_gamestate
 from pente.data.Language import Language
 from pente.data.data import Data
@@ -45,18 +47,24 @@ class Main:
     def __init__(self, language: Language):
         self.__language: Language = language
         self.__data: Optional[Data] = None
-        self.__pack_names: Sequence[str] = []
+        # Only the packs that were explicitly loaded are remembered
+        self.__pack_names: tuple[str, ...] = ()
         self.__accounts: list[str] = []
-        self.should_autosave = False
+        self.should_autosave: bool = True
+        self.difficulty: float = 1
 
         self.__game: Optional[Game] = None
-        self.__game_pack_names: Sequence[str] = []
+        self.__game_pack_names: tuple[str, ...] = ()
         self.__mode: Optional[Main.GameMode] = None
         self.__player_outputs: Optional[tuple[PlayerOutput, PlayerOutput]] = None
 
     @property
-    def accounts(self) -> tuple[str]:
+    def accounts(self) -> tuple[str, ...]:
         return tuple(self.__accounts)
+
+    @property
+    def pack_names(self) -> tuple[str, ...]:
+        return self.__pack_names
 
     class LoginResponse(_ResponseEnum):
         OK = auto()
@@ -94,7 +102,7 @@ class Main:
         except DataError:
             return False
 
-        self.__pack_names = names
+        self.__pack_names = tuple(names)
 
         return True
 
@@ -247,3 +255,12 @@ class Main:
             return Main.UndoResponse.NO_DATA
 
         return Main.UndoResponse.OK
+
+    def ai_suggestion(self) -> Optional[tuple[int, ...]]:
+        if self.__game is None or self.__game_pack_names != ("pente",):
+            return None
+
+        if random.random() < self.difficulty:
+            return ai.best_move(self.__game.gamestate)
+        else:
+            return ai.random_move(self.__game.gamestate)

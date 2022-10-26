@@ -67,10 +67,10 @@ class Cli:
             self.execute_command(*input().split(" "))
 
     def execute_command(self, *words: str):
-        command, *args = words
-        if command in self.__COMMANDS.keys():
+        command_name, *args = words
+        if command_name in self.__COMMANDS.keys():
             # Determine if the provided arguments are compatible with the function
-            func = self.__COMMANDS[command]
+            func = self.__COMMANDS[command_name]
             params = list(inspect.signature(func).parameters.values())
             is_varargs = len(params) > 0 and params[-1].kind == params[-1].VAR_POSITIONAL
             is_compatible = len(args) == len(params) or is_varargs and len(args) >= len(params) - 1
@@ -159,6 +159,14 @@ class Cli:
             self.__language.print_key("cli.load_data.error")
         return response
 
+    @command("listdata")
+    def list_datapacks(self):
+        packs = self.__main.pack_names
+        if len(packs) == 0:
+            self.__language.print_key("cli.list_datapacks.none")
+        else:
+            self.__language.print_key("cli.list_datapacks.some", packs=" ".join(packs))
+
     @command("play")
     def launch_game(self, *names: str):
         # If packs are specified, load them
@@ -245,3 +253,25 @@ class Cli:
         self.__language.print_key("cli.confirm.exit")
         if input().lower() == "y":
             raise SystemExit
+
+    @command
+    def difficulty(self, difficulty: str):
+        try:
+            difficulty = float(difficulty)
+        except ValueError:
+            self.__language.print_key("cli.difficulty.bad_format")
+            return
+        if difficulty < 0 or difficulty > 1:
+            self.__language.print_key("cli.difficulty.bad_format")
+            return
+
+        self.__main.difficulty = difficulty
+        self.__language.print_key("cli.difficulty.ok")
+
+    @command("aimove")
+    def ai_suggestion(self):
+        response = self.__main.ai_suggestion()
+        if response is None:
+            self.__language.print_key("cli.ai_suggestion.invalid")
+        else:
+            self.__language.print_key("cli.ai_suggestion.ok", move=" ".join(map(str, response)))

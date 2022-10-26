@@ -33,7 +33,7 @@ class Game:
 
     @property
     def next_player(self):
-        return (self.__gamestate.active_player + 1) % self.__gamestate.num_players
+        return self.gamestate.next_player
 
     def get_displayable_scores(self):
         return [(score.display_name, self.__gamestate.scores[score.name])
@@ -51,7 +51,7 @@ class Game:
         # Save the previous active player so that checking can_place doesn't affect the active player
         saved_active_player = self.__gamestate.active_player
         if player is None:
-            player = (saved_active_player + 1) % NUM_PLAYERS
+            player = self.next_player
         self.__gamestate.active_player = player
 
         try:
