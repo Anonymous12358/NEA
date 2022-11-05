@@ -6,8 +6,6 @@ from pente.game.Board import EMPTY, Board
 from pente.game.GameState import GameState
 from pente.game.rule.Pattern import Pattern
 
-# Distance weightings are cumulative, so stones within 3 tiles are counted 1+2 times
-_DISTANCE_WEIGHTINGS = {1: 3, 3: 2, 5: 1}
 _SCORES = {
     # In the absence of other factors, play near the opponent
     Pattern("Aa"): 0.1,
@@ -48,35 +46,6 @@ _SCORES = {
 }
 
 
-def weight_board(tiles: np.ndarray) -> np.ndarray:
-    # Each empty tile has a weighting of at least 1, so any empty tile could be chosen
-    weights = np.full(tiles.shape, 1)
-    for coords in np.ndindex(tiles.shape):
-        if tiles[coords] != EMPTY:
-            weights[coords] = 0
-            continue
-
-        # Nearby stones
-        for distance, distance_weighting in _DISTANCE_WEIGHTINGS.items():
-            weights[coords] += np.count_nonzero(
-                tiles[tuple(slice(max(0, ordinate - distance), ordinate + distance) for ordinate in coords)]
-                != EMPTY
-            ) * distance_weighting
-
-    return weights
-
-
-def random_move(gamestate: GameState) -> tuple[int, ...]:
-    tiles = gamestate.board.get_tiles()
-    weight_cumsum = np.cumsum(weight_board(tiles))
-    # We don't want to be able to roll 0, but we do want to be able to roll max
-    roll = (1 - random.random()) * weight_cumsum[-1]
-    # Find the leftmost value in weight_cumsum that is less than or equal to roll
-    index = np.searchsorted(weight_cumsum, roll, side='left')
-
-    return np.unravel_index(index, tiles.shape)
-
-
 def score_play(tiles: np.ndarray, center: tuple[int, ...]):
     lines = Board.get_lines_on(tiles, center)
     result = 0
@@ -87,7 +56,7 @@ def score_play(tiles: np.ndarray, center: tuple[int, ...]):
     return result
 
 
-def best_move(gamestate: GameState) -> tuple[int, ...]:
+def best_move(gamestate: GameState, difficulty: float) -> tuple[int, ...]:
     tiles = gamestate.board.get_tiles()
 
     best_play, best_score = (0,) * tiles.ndim, float('-inf')
@@ -97,6 +66,7 @@ def best_move(gamestate: GameState) -> tuple[int, ...]:
 
         tiles[test_play] = gamestate.next_player
         test_score = score_play(tiles, test_play)
+        test_score += difficulty * random.random()
         if test_score > best_score:
             best_play = test_play
             best_score = test_score

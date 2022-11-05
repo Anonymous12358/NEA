@@ -2,7 +2,6 @@
 Interfaces between the UI and the features, delegating UI requests to the appropriate class
 """
 import json
-import random
 import traceback
 from datetime import datetime
 from enum import Enum, auto
@@ -12,7 +11,7 @@ from typing import Optional, Sequence
 
 from yaml.scanner import ScannerError
 
-from pente.account import accounts
+from pente.account import accounts, stats
 from pente.ai import ai
 from pente.data import data, load_gamestate
 from pente.data.Language import Language
@@ -51,7 +50,8 @@ class Main:
         self.__pack_names: tuple[str, ...] = ()
         self.__accounts: list[str] = []
         self.should_autosave: bool = True
-        self.difficulty: float = 1
+        self.difficulty: float = 0
+        self.should_track_stats: bool = False
 
         self.__game: Optional[Game] = None
         self.__game_pack_names: tuple[str, ...] = ()
@@ -59,12 +59,15 @@ class Main:
         self.__player_outputs: Optional[tuple[PlayerOutput, PlayerOutput]] = None
 
     @property
-    def accounts(self) -> tuple[str, ...]:
+    def accounts(self):
         return tuple(self.__accounts)
 
     @property
     def pack_names(self) -> tuple[str, ...]:
         return self.__pack_names
+
+    def resolve_account_index(self, account_index: int) -> Optional[str]:
+        return None if account_index >= len(self.__accounts) else self.__accounts[account_index]
 
     class LoginResponse(_ResponseEnum):
         OK = auto()
@@ -114,6 +117,12 @@ class Main:
                 player_output.update(self.__game, i, False)
 
     def __end_game(self):
+        if self.should_track_stats:
+            username = self.resolve_account_index(self.__game.winner)
+            if username is not None:
+                wins = stats.get_wins(username, self.__game.win_reason)
+                stats.set_wins(username, self.__game.win_reason, wins + 1)
+
         if self.__mode is Main.GameMode.HOTSEAT:
             self.__player_outputs[0].send_victory(self.__game, 0, True)
         else:
@@ -150,6 +159,7 @@ class Main:
             return False
         else:
             self.__game.winner = (self.__get_ui_player() + 1) % 2
+            self.__game.win_reason = '.concede'
             self.__end_game()
             return True
 
@@ -260,7 +270,4 @@ class Main:
         if self.__game is None or self.__game_pack_names != ("pente",):
             return None
 
-        if random.random() < self.difficulty:
-            return ai.best_move(self.__game.gamestate)
-        else:
-            return ai.random_move(self.__game.gamestate)
+        return ai.best_move(self.__game.gamestate, self.difficulty)

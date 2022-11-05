@@ -19,6 +19,7 @@ class Game:
         self.__restrictions = restrictions
         self.__rules = rules
         self.winner = None
+        self.win_reason = None
 
     @classmethod
     def from_gamestate(cls, gamestate: GameState, dimensions: tuple[int, ...], scores: Sequence[Score],
@@ -103,6 +104,7 @@ class Game:
                 for player in range(NUM_PLAYERS):
                     if self.__gamestate.scores[score.name][player] >= score.win_threshold:
                         self.winner = player
+                        self.win_reason = score.name
                         break
                 else:
                     continue

@@ -6,7 +6,7 @@ import inspect
 from collections.abc import Callable
 from functools import partial
 
-from pente.account import accounts
+from pente.account import accounts, stats
 from pente.cli.CliPlayerOutput import CliPlayerOutput
 from pente.data.Language import Language
 from pente.main.Main import Main
@@ -29,7 +29,7 @@ def command(name_or_func):
 
 
 class Cli:
-    # Maps color names (which are part of language keys) to color codes (part of the ANSI escape to set the color)
+    # Maps color names (which are parts of language keys) to color codes (part of the ANSI escape to set the color)
     __COLORS = {
         "default": '0',
         "black": '30',
@@ -129,11 +129,11 @@ class Cli:
                                       account2=logged_in_accounts[1])
 
     def __get_color(self, account_index: int):
-        logged_in_accounts = self.__main.accounts
-        if account_index >= len(logged_in_accounts):
+        username = self.__main.resolve_account_index(account_index)
+        if username is None:
             return '0'
         else:
-            return accounts.get_color(logged_in_accounts[account_index])
+            return accounts.get_color(username)
 
     @command("color")
     @command("colour")
@@ -144,12 +144,12 @@ class Cli:
             self.__language.print_key("cli.set_color.bad_format")
             return
 
-        logged_in_accounts = self.__main.accounts
-        if account_index >= len(logged_in_accounts):
+        username = self.__main.resolve_account_index(account_index)
+        if username is None:
             self.__language.print_key("cli.set_color.not_logged_in")
             return
 
-        accounts.set_color(logged_in_accounts[account_index], self.__COLOR_ALIASES[color])
+        accounts.set_color(username, self.__COLOR_ALIASES[color])
         self.__language.print_key("cli.set_color.ok")
 
     @command("data")
@@ -235,8 +235,8 @@ class Cli:
     @command("autosave")
     def toggle_autosave(self):
         self.__main.should_autosave = not self.__main.should_autosave
-        mode = self.__language.resolve_key("cli.toggle_autosave." + ("on" if self.__main.should_autosave else "off"))
-        self.__language.print_key("cli.toggle_autosave.ok", mode=mode)
+        mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__main.should_autosave else "off"))
+        self.__language.print_key("cli.toggle_autosave", mode=mode)
 
     @command
     def undo(self):
@@ -261,9 +261,6 @@ class Cli:
         except ValueError:
             self.__language.print_key("cli.difficulty.bad_format")
             return
-        if difficulty < 0 or difficulty > 1:
-            self.__language.print_key("cli.difficulty.bad_format")
-            return
 
         self.__main.difficulty = difficulty
         self.__language.print_key("cli.difficulty.ok")
@@ -275,3 +272,33 @@ class Cli:
             self.__language.print_key("cli.ai_suggestion.invalid")
         else:
             self.__language.print_key("cli.ai_suggestion.ok", move=" ".join(map(str, response)))
+
+    @command("trackstats")
+    def toggle_track_stats(self):
+        self.__main.should_track_stats = not self.__main.should_track_stats
+        mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__main.should_track_stats else "off"))
+        self.__language.print_key("cli.toggle_track_stats", mode=mode)
+
+    @command("showstats")
+    def show_stats(self, account_index: str, win_reason: str):
+        try:
+            account_index = int(account_index)
+        except ValueError:
+            self.__language.print_key("cli.show_stats.bad_format")
+            return
+
+        username = self.__main.resolve_account_index(account_index)
+        wins = stats.get_wins(username, win_reason)
+        self.__language.print_key("cli.show_stats.ok", wins=str(wins))
+
+    @command("clearstats")
+    def clear_stats(self, account_index: str):
+        try:
+            account_index = int(account_index)
+        except ValueError:
+            self.__language.print_key("cli.clear_stats.bad_format")
+            return
+
+        username = self.__main.resolve_account_index(account_index)
+        stats.clear_wins(username)
+        self.__language.print_key("cli.clear_stats.ok")
