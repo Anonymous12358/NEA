@@ -23,6 +23,11 @@ def get_wins(username: str, win_reason: str) -> int:
     return query.get().wins
 
 
+def get_all_wins(username: str) -> dict[str, int]:
+    query = Wins.select().join(Account).where(Account.username == username)
+    return {record.win_reason: record.wins for record in query}
+
+
 def set_wins(username: str, win_reason: str, wins: int) -> bool:
     if len(win_reason) > _WIN_REASON_CHAR_LIMIT:
         return False

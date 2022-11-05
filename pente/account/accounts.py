@@ -12,8 +12,7 @@ class Account(peewee.Model):
     id = peewee.UUIDField(primary_key=True)
     username = peewee.CharField(max_length=31)
     salt = peewee.BlobField()
-    # TODO Rename to `hash` next time database is recreated
-    hash_ = peewee.BlobField()
+    hash = peewee.BlobField()
     # The payload for the ANSI escape to set the color
     color = peewee.CharField(max_length=31)
 

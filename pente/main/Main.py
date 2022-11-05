@@ -37,12 +37,6 @@ class _ResponseEnum(Enum):
 
 
 class Main:
-    class GameMode(Enum):
-        HOTSEAT = auto()  # Two players using the same UI
-        AI = auto()
-        NETWORK_HOST = auto()
-        NETWORK_CLIENT = auto()
-
     def __init__(self, language: Language):
         self.__language: Language = language
         self.__data: Optional[Data] = None
@@ -55,7 +49,6 @@ class Main:
 
         self.__game: Optional[Game] = None
         self.__game_pack_names: tuple[str, ...] = ()
-        self.__mode: Optional[Main.GameMode] = None
         self.__player_outputs: Optional[tuple[PlayerOutput, PlayerOutput]] = None
 
     @property
@@ -95,6 +88,7 @@ class Main:
             return False
 
         self.__accounts.remove(username)
+        return True
 
     def load_data(self, names: Sequence[str]) -> bool:
         try:
@@ -110,11 +104,7 @@ class Main:
         return True
 
     def __update_players(self):
-        if self.__mode is Main.GameMode.HOTSEAT:
-            self.__player_outputs[0].update(self.__game, 0, True)
-        else:
-            for i, player_output in enumerate(self.__player_outputs):
-                player_output.update(self.__game, i, False)
+        self.__player_outputs[0].update(self.__game, 0, True)
 
     def __end_game(self):
         if self.should_track_stats:
@@ -123,11 +113,7 @@ class Main:
                 wins = stats.get_wins(username, self.__game.win_reason)
                 stats.set_wins(username, self.__game.win_reason, wins + 1)
 
-        if self.__mode is Main.GameMode.HOTSEAT:
-            self.__player_outputs[0].send_victory(self.__game, 0, True)
-        else:
-            for i, player_output in enumerate(self.__player_outputs):
-                player_output.send_victory(self.__game, i, False)
+        self.__player_outputs[0].send_victory(self.__game, 0, True)
         self.__game = None
         self.__mode = None
         self.__player_outputs = None
@@ -145,8 +131,6 @@ class Main:
             return Main.LaunchGameResponse.NO_DATA
 
         self.__player_outputs = player_outputs
-        # TODO When more player outputs exist, set the mode correctly
-        self.__mode = Main.GameMode.HOTSEAT
 
         self.__game_pack_names = self.__pack_names
 
@@ -171,15 +155,9 @@ class Main:
 
     def __get_ui_player(self):
         """
-        Get which player index the UI is currently controlling. For playing on a network or against AI, this is
-        constant; for hotseat play, this is the next player in turn order.
+        Get which player index the UI is currently controlling
         """
-        if self.__mode in (Main.GameMode.AI, Main.GameMode.NETWORK_HOST):
-            return 0
-        elif self.__mode is Main.GameMode.NETWORK_HOST:
-            return 1
-        else:
-            return self.__game.next_player
+        return self.__game.next_player
 
     def ui_move(self, coords: tuple[int, ...]) -> MoveResponse:
         if self.__game is None:

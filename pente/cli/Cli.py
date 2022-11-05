@@ -146,7 +146,7 @@ class Cli:
 
         username = self.__main.resolve_account_index(account_index)
         if username is None:
-            self.__language.print_key("cli.set_color.not_logged_in")
+            self.__language.print_key("cli.index_not_logged_in")
             return
 
         accounts.set_color(username, self.__COLOR_ALIASES[color])
@@ -288,8 +288,16 @@ class Cli:
             return
 
         username = self.__main.resolve_account_index(account_index)
-        wins = stats.get_wins(username, win_reason)
-        self.__language.print_key("cli.show_stats.ok", wins=str(wins))
+        if username is None:
+            self.__language.print_key("cli.index_not_logged_in")
+            return
+
+        if win_reason == '.all':
+            for win_reason, wins in stats.get_all_wins(username).items():
+                self.__language.print_key("cli.show_stats.ok", reason=win_reason, wins=str(wins))
+        else:
+            wins = stats.get_wins(username, win_reason)
+            self.__language.print_key("cli.show_stats.ok", reason=win_reason, wins=str(wins))
 
     @command("clearstats")
     def clear_stats(self, account_index: str):
