@@ -9,7 +9,7 @@ from typing import Optional
 from pente.data.Language import Language
 from pente.game.Board import Board, EMPTY
 from pente.game.Game import Game
-from pente.main.PlayerOutput import PlayerOutput
+from pente.core.PlayerOutput import PlayerOutput
 
 
 class CliPlayerOutput(PlayerOutput):

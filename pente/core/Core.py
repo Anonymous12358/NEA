@@ -1,5 +1,5 @@
 """
-Interfaces between the UI and the features, delegating UI requests to the appropriate class
+Stores stateful aspects of the program that aren't UI-specific
 """
 import json
 import traceback
@@ -19,12 +19,12 @@ from pente.data.data import Data
 from pente.data.deserialize import DataError
 from pente.game.Game import Game
 from pente.game.GameState import GameState
-from pente.main.PlayerOutput import PlayerOutput
+from pente.core.PlayerOutput import PlayerOutput
 
 
 class _ResponseEnum(Enum):
     """
-    Response enums are used to represent to the UI what happened in the Main when the request was made
+    Response enums are used to represent to the UI what happened in the Core when the request was made
     """
 
     # so/73492285
@@ -36,7 +36,7 @@ class _ResponseEnum(Enum):
         return self == self.__class__.OK
 
 
-class Main:
+class Core:
     def __init__(self, language: Language):
         self.__language: Language = language
         self.__data: Optional[Data] = None
@@ -69,8 +69,8 @@ class Main:
 
     def can_login(self) -> LoginResponse:
         if len(self.__accounts) >= 2:
-            return Main.LoginResponse.NO_SPACE
-        return Main.LoginResponse.OK
+            return Core.LoginResponse.NO_SPACE
+        return Core.LoginResponse.OK
 
     def login(self, username: str, password: str) -> LoginResponse:
         can = self.can_login()
@@ -78,10 +78,10 @@ class Main:
             return can
 
         if not accounts.login(username, password):
-            return Main.LoginResponse.INCORRECT_DETAILS
+            return Core.LoginResponse.INCORRECT_DETAILS
 
         self.__accounts.append(username)
-        return Main.LoginResponse.OK
+        return Core.LoginResponse.OK
 
     def logout(self, username: str) -> bool:
         if username not in self.__accounts:
@@ -126,9 +126,9 @@ class Main:
     def launch_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], gamestate: Optional[GameState] = None
                     ) -> LaunchGameResponse:
         if self.__game is not None:
-            return Main.LaunchGameResponse.ALREADY_PLAYING
+            return Core.LaunchGameResponse.ALREADY_PLAYING
         if self.__data is None:
-            return Main.LaunchGameResponse.NO_DATA
+            return Core.LaunchGameResponse.NO_DATA
 
         self.__player_outputs = player_outputs
 
@@ -136,7 +136,7 @@ class Main:
 
         self.__game = self.__data.to_game(gamestate)
         self.__update_players()
-        return Main.LaunchGameResponse.OK
+        return Core.LaunchGameResponse.OK
 
     def ui_concede(self):
         if self.__game is None:
@@ -161,19 +161,19 @@ class Main:
 
     def ui_move(self, coords: tuple[int, ...]) -> MoveResponse:
         if self.__game is None:
-            return Main.MoveResponse.NO_GAME
+            return Core.MoveResponse.NO_GAME
 
         if self.__game.next_player != self.__get_ui_player():
-            return Main.MoveResponse.NOT_TURN
+            return Core.MoveResponse.NOT_TURN
 
         if not self.__game.can_place(coords):
-            return Main.MoveResponse.ILLEGAL
+            return Core.MoveResponse.ILLEGAL
 
         if self.should_autosave:
             self.save("autosave")
 
         self.__move(self.__get_ui_player(), coords)
-        return Main.MoveResponse.OK
+        return Core.MoveResponse.OK
 
     def __move(self, player: int, coords: tuple[int, ...]):
         self.__game.place(coords, player)
@@ -205,9 +205,9 @@ class Main:
             gamestate, dct = load_gamestate.load_gamestate(self.__language, file_name)
         except (ScannerError, JSONDecodeError, FileNotFoundError, PermissionError):
             traceback.print_exc()
-            return Main.LaunchGameResponse.NO_DATA
+            return Core.LaunchGameResponse.NO_DATA
         except load_gamestate.LoadGameStateError:
-            return Main.LaunchGameResponse.NO_DATA
+            return Core.LaunchGameResponse.NO_DATA
 
         if dct["datapacks"] != self.__pack_names:
             self.load_data(dct["datapacks"])
@@ -225,10 +225,10 @@ class Main:
         Silently end the current game and replace it with the autosave, while keeping the same player outputs
         """
         if not self.should_autosave:
-            return Main.UndoResponse.AUTOSAVING_OFF
+            return Core.UndoResponse.AUTOSAVING_OFF
         previous_game = self.__game
         if previous_game is None:
-            return Main.UndoResponse.NO_GAME
+            return Core.UndoResponse.NO_GAME
         self.__game = None
 
         try:
@@ -238,11 +238,11 @@ class Main:
             self.__game = previous_game
             raise
         # launch_game will never return ALREADY_PLAYING since we set self.__game = None
-        if load_response is Main.LaunchGameResponse.NO_DATA:
+        if load_response is Core.LaunchGameResponse.NO_DATA:
             self.__game = previous_game
-            return Main.UndoResponse.NO_DATA
+            return Core.UndoResponse.NO_DATA
 
-        return Main.UndoResponse.OK
+        return Core.UndoResponse.OK
 
     def ai_suggestion(self) -> Optional[tuple[int, ...]]:
         if self.__game is None or self.__game_pack_names != ("pente",):

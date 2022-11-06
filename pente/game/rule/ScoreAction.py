@@ -28,3 +28,4 @@ class ScoreAction(Applicable):
         player = self.resolve_player_index(gamestate, locations, center, self.__player_index)
         previous = gamestate.scores[self.__memo][player]
         gamestate.scores[self.__memo][player] = self.__operation(previous, self.__value)
+        return True

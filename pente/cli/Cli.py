@@ -9,7 +9,7 @@ from functools import partial
 from pente.account import accounts, stats
 from pente.cli.CliPlayerOutput import CliPlayerOutput
 from pente.data.Language import Language
-from pente.main.Main import Main
+from pente.core.Core import Core
 
 _COMMANDS = {}
 
@@ -52,7 +52,7 @@ class Cli:
 
     def __init__(self):
         self.__language = Language(["en_UK"], partial(print, end=""))
-        self.__main = Main(self.__language)
+        self.__core = Core(self.__language)
         self.__COMMANDS = {}
         for command_name, func_name in _COMMANDS.items():
             self.__COMMANDS[command_name] = getattr(self, func_name)
@@ -83,11 +83,17 @@ class Cli:
 
     @command
     def help(self):
+        """Display a list of commands"""
         for name, func in self.__COMMANDS.items():
             print(f"{name} " + " ".join(f"<{param}>" for param in inspect.signature(func).parameters))
+            doc = inspect.getdoc(func)
+            if doc is not None:
+                for line in doc.splitlines():
+                    print(f"    {line}")
 
     @command
     def register(self, username: str):
+        """Register an account with a given username; password entered separately"""
         self.__language.print_key("cli.login.password_prompt")
         password = getpass.getpass("")
         if accounts.register(username, password) is None:
@@ -97,21 +103,23 @@ class Cli:
 
     @command
     def login(self, username: str):
-        if self.__main.can_login() == Main.LoginResponse.NO_SPACE:
+        """Login the given account (must be registered)"""
+        if self.__core.can_login() == Core.LoginResponse.NO_SPACE:
             self.__language.print_key("cli.login.no_space")
             return
 
         self.__language.print_key("cli.login.password_prompt")
         password = getpass.getpass("")
-        response = self.__main.login(username, password)
-        if response is Main.LoginResponse.INCORRECT_DETAILS:
+        response = self.__core.login(username, password)
+        if response is Core.LoginResponse.INCORRECT_DETAILS:
             self.__language.print_key("cli.login.incorrect_details")
         else:
             self.__language.print_key("cli.login.ok")
 
     @command
     def logout(self, username: str):
-        response = self.__main.logout(username)
+        """Logout the given account by username"""
+        response = self.__core.logout(username)
         if not response:
             self.__language.print_key("cli.logout.not_logged_in")
         else:
@@ -119,7 +127,8 @@ class Cli:
 
     @command("listaccounts")
     def list_accounts(self):
-        logged_in_accounts = self.__main.accounts
+        """List which accounts are currently logged in"""
+        logged_in_accounts = self.__core.accounts
         if len(logged_in_accounts) == 0:
             self.__language.print_key("cli.list_accounts.none")
         if len(logged_in_accounts) == 1:
@@ -129,7 +138,7 @@ class Cli:
                                       account2=logged_in_accounts[1])
 
     def __get_color(self, account_index: int):
-        username = self.__main.resolve_account_index(account_index)
+        username = self.__core.resolve_account_index(account_index)
         if username is None:
             return '0'
         else:
@@ -138,13 +147,14 @@ class Cli:
     @command("color")
     @command("colour")
     def set_color(self, account_index: str, color: str):
+        """Set the colour to use to represent pieces belonging to a given account, by account index"""
         try:
             account_index = int(account_index)
         except ValueError:
             self.__language.print_key("cli.set_color.bad_format")
             return
 
-        username = self.__main.resolve_account_index(account_index)
+        username = self.__core.resolve_account_index(account_index)
         if username is None:
             self.__language.print_key("cli.index_not_logged_in")
             return
@@ -154,14 +164,16 @@ class Cli:
 
     @command("data")
     def load_data(self, *names: str) -> bool:
-        response = self.__main.load_data(names)
+        """Load a set of datapacks; the next game launched will use those datapacks"""
+        response = self.__core.load_data(names)
         if not response:
             self.__language.print_key("cli.load_data.error")
         return response
 
     @command("listdata")
     def list_datapacks(self):
-        packs = self.__main.pack_names
+        """List the currently loaded datapacks"""
+        packs = self.__core.pack_names
         if len(packs) == 0:
             self.__language.print_key("cli.list_datapacks.none")
         else:
@@ -169,6 +181,8 @@ class Cli:
 
     @command("play")
     def launch_game(self, *names: str):
+        """Launch a game with the currently loaded datapacks. If no datapacks are loaded, loads pente first. If
+        datapacks are specified as arguments, loads those packs first."""
         # If packs are specified, load them
         if names:
             if not self.load_data(*names):
@@ -178,45 +192,51 @@ class Cli:
 
         colors = self.__get_color(0), self.__get_color(1)
         player_outputs = CliPlayerOutput(self.__language, colors), CliPlayerOutput(self.__language, colors)
-        response = self.__main.launch_game(player_outputs)
-        if response is Main.LaunchGameResponse.ALREADY_PLAYING:
+        response = self.__core.launch_game(player_outputs)
+        if response is Core.LaunchGameResponse.ALREADY_PLAYING:
             self.__language.print_key("cli.launch.already_playing")
-        elif response is Main.LaunchGameResponse.NO_DATA:
+        elif response is Core.LaunchGameResponse.NO_DATA:
             # Load Pente, then reattempt
             if not self.load_data("pente"):
                 self.__language.print_key("cli.launch.no_data")
                 return
-            self.__main.launch_game(player_outputs)
+            self.__core.launch_game(player_outputs)
+
+    def __confirm(self, key: str, **kwargs: str) -> bool:
+        self.__language.print_key("cli.confirm." + key, **kwargs)
+        return input().lower() == self.__language.resolve_key("cli.confirm.positive_response")
 
     @command
     def concede(self):
-        self.__language.print_key("cli.confirm.concede")
-        if input().lower() != "y":
+        """Concede the current game"""
+        if not self.__confirm("concede"):
             return
 
-        response = self.__main.ui_concede()
+        response = self.__core.ui_concede()
         if not response:
             self.__language.print_key("cli.concede.no_game")
 
     @command
     def move(self, *coords: str):
+        """Make a move in the current game at the given coordinates"""
         try:
             coords = tuple(map(int, coords))
         except ValueError:
             self.__language.print_key("cli.move.bad_format")
             return
 
-        response = self.__main.ui_move(coords)
-        if response is Main.MoveResponse.NO_GAME:
+        response = self.__core.ui_move(coords)
+        if response is Core.MoveResponse.NO_GAME:
             self.__language.print_key("cli.move.no_game")
-        elif response is Main.MoveResponse.NOT_TURN:
+        elif response is Core.MoveResponse.NOT_TURN:
             self.__language.print_key("cli.move.not_turn")
-        elif response is Main.MoveResponse.ILLEGAL:
+        elif response is Core.MoveResponse.ILLEGAL:
             self.__language.print_key("cli.move.illegal")
 
     @command
     def save(self):
-        file_name = self.__main.save()
+        """Save the current game into the saves folder. The file is named according to the date and time."""
+        file_name = self.__core.save()
         if file_name is not None:
             self.__language.print_key("cli.save_game.ok", file_name=file_name)
         else:
@@ -224,50 +244,51 @@ class Cli:
 
     @command("load")
     def load_game(self, file_name: str):
+        """Load a saved game from the save folder, by the given file name."""
         colors = self.__get_color(0), self.__get_color(1)
         player_outputs = CliPlayerOutput(self.__language, colors), CliPlayerOutput(self.__language, colors)
-        response = self.__main.load_game(player_outputs, file_name)
-        if response is Main.LaunchGameResponse.ALREADY_PLAYING:
+        response = self.__core.load_game(player_outputs, file_name)
+        if response is Core.LaunchGameResponse.ALREADY_PLAYING:
             self.__language.print_key("cli.launch.already_playing")
-        elif response is Main.LaunchGameResponse.NO_DATA:
+        elif response is Core.LaunchGameResponse.NO_DATA:
             self.__language.print_key("cli.launch.no_data")
 
     @command("autosave")
     def toggle_autosave(self):
-        self.__main.should_autosave = not self.__main.should_autosave
-        mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__main.should_autosave else "off"))
+        """Toggle whether or not the game is automatically saved into saves/autosave.json before every move. Off by
+        default."""
+        self.__core.should_autosave = not self.__core.should_autosave
+        mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__core.should_autosave else "off"))
         self.__language.print_key("cli.toggle_autosave", mode=mode)
 
     @command
     def undo(self):
-        response = self.__main.undo()
-        if response is Main.UndoResponse.AUTOSAVING_OFF:
+        """Restore the last autosave, which is most likely the state of the game before the previous move"""
+        response = self.__core.undo()
+        if response is Core.UndoResponse.AUTOSAVING_OFF:
             self.__language.print_key("cli.undo.autosaving_off")
-        elif response is Main.UndoResponse.NO_GAME:
+        elif response is Core.UndoResponse.NO_GAME:
             self.__language.print_key("cli.undo.no_game")
-        elif response is Main.UndoResponse.NO_DATA:
+        elif response is Core.UndoResponse.NO_DATA:
             self.__language.print_key("cli.undo.no_data")
 
     @command
-    def exit(self):
-        self.__language.print_key("cli.confirm.exit")
-        if input().lower() == "y":
-            raise SystemExit
-
-    @command
     def difficulty(self, difficulty: str):
+        """Set the difficulty rating of the ai. 0 is the hardest difficulty; 30 is a reasonable minimum difficulty"""
         try:
             difficulty = float(difficulty)
         except ValueError:
             self.__language.print_key("cli.difficulty.bad_format")
             return
 
-        self.__main.difficulty = difficulty
+        self.__core.difficulty = difficulty
         self.__language.print_key("cli.difficulty.ok")
 
     @command("aimove")
     def ai_suggestion(self):
-        response = self.__main.ai_suggestion()
+        """Have the ai suggest a move. To play against the ai, use this command and then manually input the move on
+        its turn."""
+        response = self.__core.ai_suggestion()
         if response is None:
             self.__language.print_key("cli.ai_suggestion.invalid")
         else:
@@ -275,19 +296,23 @@ class Cli:
 
     @command("trackstats")
     def toggle_track_stats(self):
-        self.__main.should_track_stats = not self.__main.should_track_stats
-        mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__main.should_track_stats else "off"))
+        """Toggle whether statistics are tracked. If on, when a game ends, the winner and win reason are recorded. Off
+        by default."""
+        self.__core.should_track_stats = not self.__core.should_track_stats
+        mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__core.should_track_stats else "off"))
         self.__language.print_key("cli.toggle_track_stats", mode=mode)
 
     @command("showstats")
     def show_stats(self, account_index: str, win_reason: str):
+        """Display the number of games a given account, by account index, has won in a given way. Default win reasons
+        are gomoku.victory for five in a row, pente.captures, .concede, and .all to display all reasons."""
         try:
             account_index = int(account_index)
         except ValueError:
             self.__language.print_key("cli.show_stats.bad_format")
             return
 
-        username = self.__main.resolve_account_index(account_index)
+        username = self.__core.resolve_account_index(account_index)
         if username is None:
             self.__language.print_key("cli.index_not_logged_in")
             return
@@ -301,12 +326,22 @@ class Cli:
 
     @command("clearstats")
     def clear_stats(self, account_index: str):
+        """Clear all statistics for a given account by account index"""
         try:
             account_index = int(account_index)
         except ValueError:
             self.__language.print_key("cli.clear_stats.bad_format")
             return
 
-        username = self.__main.resolve_account_index(account_index)
+        if not self.__confirm("clear_stats"):
+            return
+
+        username = self.__core.resolve_account_index(account_index)
         stats.clear_wins(username)
         self.__language.print_key("cli.clear_stats.ok")
+
+    @command
+    def exit(self):
+        """Exit the application. No saves are made or statistics tracked."""
+        if self.__confirm("exit"):
+            raise SystemExit

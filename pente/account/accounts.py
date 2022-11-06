@@ -31,7 +31,7 @@ def register(username: str, password: str) -> Optional[uuid.UUID]:
     salt = secrets.token_bytes(8)
     hash_ = hashlib.sha256(bytes(password, 'utf-8') + salt).digest()
 
-    Account.create(id=user_id, username=username, salt=salt, hash_=hash_, color='0')
+    Account.create(id=user_id, username=username, salt=salt, hash=hash_, color='0')
     return user_id
 
 
@@ -43,7 +43,7 @@ def login(username: str, password: str) -> bool:
     salt = account.salt
 
     hash_ = hashlib.sha256(bytes(password, 'utf-8') + salt).digest()
-    return hash_ == account.hash_
+    return hash_ == account.hash
 
 
 def delete(username: str):

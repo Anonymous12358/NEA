@@ -116,7 +116,7 @@ class Board:
             min_ordinate = min(itertools.compress(transformed_centre, [direction != 0 for direction in directs]))
             min_end_distance = min(itertools.compress(end_distances, [direction != 0 for direction in directs]))
 
-            # Crop the array so that the main diagonal passes through the desired center
+            # Crop the array so that the core diagonal passes through the desired center
             # To achieve this, the center must have the same distance from the start in every dimension
             # It must also have the same distance from the end so that the array is the same length in every dimension
             # We also crop out the dimensions in which the line doesn't travel at this stage
@@ -126,7 +126,7 @@ class Board:
                     # In this dimension, we only want the index that contains the center
                     crop_indices.append(ordinate)
                 else:
-                    # Crop so that the centre lies on the main diagonal
+                    # Crop so that the centre lies on the core diagonal
                     # The distance from the start to the centre in each dimension must be the same
                     # ie each ordinate of the center within the cropped array is the same as min(transformed_centre)
                     start_index = ordinate - min_ordinate
