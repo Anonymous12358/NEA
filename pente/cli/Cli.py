@@ -57,6 +57,7 @@ class Cli:
         for command_name, func_name in _COMMANDS.items():
             self.__COMMANDS[command_name] = getattr(self, func_name)
 
+        # Maps colour aliases (user-facing, determined by language) to colour names (part of language keys)
         self.__COLOR_ALIASES = {}
         for color_name, color_code in Cli.__COLORS.items():
             self.__COLOR_ALIASES[self.__language.resolve_key(f"color.{color_name}")] = color_code
@@ -117,9 +118,15 @@ class Cli:
             self.__language.print_key("cli.login.ok")
 
     @command
-    def logout(self, username: str):
-        """Logout the given account by username"""
-        response = self.__core.logout(username)
+    def logout(self, account_index: str):
+        """Logout the given account by account index"""
+        try:
+            account_index = int(account_index)
+        except ValueError:
+            self.__language.print_key("cli.logout.bad_format")
+            return
+
+        response = self.__core.logout(account_index)
         if not response:
             self.__language.print_key("cli.logout.not_logged_in")
         else:
@@ -157,6 +164,10 @@ class Cli:
         username = self.__core.resolve_account_index(account_index)
         if username is None:
             self.__language.print_key("cli.index_not_logged_in")
+            return
+
+        if color not in self.__COLOR_ALIASES:
+            self.__language.print_key("cli.set_color.bad_color")
             return
 
         accounts.set_color(username, self.__COLOR_ALIASES[color])
@@ -203,6 +214,12 @@ class Cli:
             self.__core.launch_game(player_outputs)
 
     def __confirm(self, key: str, **kwargs: str) -> bool:
+        """
+        Requests confirmation from the user for some action. The positive response is determined by language keys.
+        :param key: A fragment of the language key used to find the question.
+        :param \\**kwargs: Parameters for the language key.
+        :returns: True if the user enters the positive response.
+        """
         self.__language.print_key("cli.confirm." + key, **kwargs)
         return input().lower() == self.__language.resolve_key("cli.confirm.positive_response")
 
@@ -274,7 +291,7 @@ class Cli:
 
     @command
     def difficulty(self, difficulty: str):
-        """Set the difficulty rating of the ai. 0 is the hardest difficulty; 30 is a reasonable minimum difficulty"""
+        """Set the difficulty rating of the ai. 0 is the hardest difficulty; 30 is very easy"""
         try:
             difficulty = float(difficulty)
         except ValueError:
@@ -305,7 +322,7 @@ class Cli:
     @command("showstats")
     def show_stats(self, account_index: str, win_reason: str):
         """Display the number of games a given account, by account index, has won in a given way. Default win reasons
-        are gomoku.victory for five in a row, pente.captures, .concede, and .all to display all reasons."""
+        are gomoku.victory for five in a row, and pente.captures, and .concede. .all to display all reasons."""
         try:
             account_index = int(account_index)
         except ValueError:

@@ -59,6 +59,10 @@ class Core:
     def pack_names(self) -> tuple[str, ...]:
         return self.__pack_names
 
+    @property
+    def in_game(self) -> bool:
+        return self.__game is not None
+
     def resolve_account_index(self, account_index: int) -> Optional[str]:
         return None if account_index >= len(self.__accounts) else self.__accounts[account_index]
 
@@ -83,11 +87,11 @@ class Core:
         self.__accounts.append(username)
         return Core.LoginResponse.OK
 
-    def logout(self, username: str) -> bool:
-        if username not in self.__accounts:
+    def logout(self, account_index: int) -> bool:
+        if account_index >= len(self.__accounts):
             return False
 
-        self.__accounts.remove(username)
+        self.__accounts.pop(account_index)
         return True
 
     def load_data(self, names: Sequence[str]) -> bool:
@@ -104,7 +108,7 @@ class Core:
         return True
 
     def __update_players(self):
-        self.__player_outputs[0].update(self.__game, 0, True)
+        self.__player_outputs[0].send_update(self.__game, 0, True)
 
     def __end_game(self):
         if self.should_track_stats:

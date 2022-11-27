@@ -17,7 +17,7 @@ class CliPlayerOutput(PlayerOutput):
         self.__language = language
         self.__colors = colors
 
-    def update(self, game: Game, your_index: int, is_hotseat: bool):
+    def send_update(self, game: Game, your_index: int, is_hotseat: bool):
         print(self.stringify_board(game.gamestate.board))
 
         displayable_scores = game.get_displayable_scores()

@@ -30,6 +30,7 @@ class Language:
                 continue
 
             key, sep, value = line.strip().partition("=")
+            value = value.replace("\\n", "\n")
             if value.endswith("^"):
                 should_append_newline = False
                 value = value[:-1]

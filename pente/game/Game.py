@@ -29,14 +29,17 @@ class Game:
         return result
 
     @property
-    def gamestate(self):
+    def gamestate(self) -> GameState:
         return self.__gamestate
 
     @property
-    def next_player(self):
+    def next_player(self) -> int:
         return self.gamestate.next_player
 
-    def get_displayable_scores(self):
+    def get_displayable_scores(self) -> list[tuple[str, list[int]]]:
+        """
+        :returns: A list of tuples of (display name, list of value of the score for each player) for each score
+        """
         return [(score.display_name, self.__gamestate.scores[score.name])
                 for score in self.__scores if score.display_name is not None]
 
