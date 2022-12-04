@@ -15,7 +15,7 @@ _SCORES = {
     # Vulnerable to capture
     Pattern("-AA-"): -1,
     # Threatening capture
-    Pattern("-[A]aa-"): 3,
+    Pattern("[A]aa-"): 3,
     # Saving from capture
     Pattern("aAA[A]"): 2,
     # Capture
@@ -38,7 +38,7 @@ _SCORES = {
     # Closed tessera still grants initiative (no center need be specified because if we're lowercase, we already lost)
     Pattern("aAAAA-"): 3,
     # Block win
-    Pattern("[A]aaaaA"): 50,
+    Pattern("[A]aaaa"): 50,
     Pattern("a[A]aaa"): 50,
     Pattern("aa[A]aa"): 50,
     # Pente
@@ -46,6 +46,8 @@ _SCORES = {
 }
 
 
+# TODO Use the actual board class, now no segmentation is needed
+# Then we also don't need get_lines_on
 def score_play(tiles: np.ndarray, center: tuple[int, ...]):
     lines = Board.get_lines_on(tiles, center)
     result = 0

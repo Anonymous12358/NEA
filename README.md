@@ -3,5 +3,5 @@ Dependencies:
 - numpy
 - peewee
 - jsonschema
-- yaml
+- pyyaml
 - networkx

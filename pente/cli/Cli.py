@@ -63,6 +63,7 @@ class Cli:
             self.__COLOR_ALIASES[self.__language.resolve_key(f"color.{color_name}")] = color_code
 
     def mainloop(self):
+        self.__language.print_key("cli.help_prompt")
         while True:
             self.__language.print_key("cli.prompt")
             self.execute_command(*input().split(" "))

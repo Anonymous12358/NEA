@@ -12,13 +12,13 @@ from pente.game.Game import Game
 
 
 class Gui(tk.Frame, PlayerOutput):
-    def __init__(self, master):
+    def __init__(self):
         self.__language = Language(['en_UK'], partial(print, end=""))
         self.__core = Core(self.__language)
         self.__game_buttons: list[list[ttk.Button]] = [[] for _ in range(19)]
         self.__game_labels = set()
 
-        super().__init__(master)
+        super().__init__(tk.Tk())
         self.grid()
         self.winfo_toplevel().title(self.__language.resolve_key("gui.name"))
         style = ttk.Style(self)
@@ -28,7 +28,7 @@ class Gui(tk.Frame, PlayerOutput):
         ttk.Button(self, text=self.__language.resolve_key("gui.button.help"), command=self.__help).grid(row=y, column=0)
         quit_button = ttk.Button(self, text=self.__language.resolve_key("gui.button.exit"))
         quit_button.grid(row=y, column=1)
-        quit_button.bind('<Shift-Button-1>', lambda _: root.destroy())
+        quit_button.bind('<Shift-Button-1>', lambda _: self.master.destroy())
         concede_button = ttk.Button(self, text=self.__language.resolve_key("gui.button.concede"))
         concede_button.grid(row=y, column=2)
         concede_button.bind('<Shift-Button-1>', lambda _: self.__core.ui_concede())
@@ -82,7 +82,7 @@ class Gui(tk.Frame, PlayerOutput):
             self, text=self.__language.resolve_key("gui.button.save"), command=self.__save_game
         ).grid(row=y, column=1)
         ttk.Button(
-            self, text=self.__language.resolve_key("gui.button.exit"), command=self.__load_game
+            self, text=self.__language.resolve_key("gui.button.load"), command=self.__load_game
         ).grid(row=y, column=2)
 
         y += 1
@@ -112,7 +112,11 @@ class Gui(tk.Frame, PlayerOutput):
         self.__language.print_key("gui.help")
 
     def __load_data(self, name):
-        self.__core.load_data((name,))
+        if name == "pro":
+            # Hardcode pro to launch pro pente, since the user can't specify multiple packs
+            self.__core.load_data(("pro", "pente"))
+        else:
+            self.__core.load_data((name,))
         if not self.__core.in_game:
             self.__clear_game()
 
@@ -136,8 +140,9 @@ class Gui(tk.Frame, PlayerOutput):
         if username is None:
             return
 
+        self.__language.print_key("gui.show_stats.header")
         for win_reason, wins in stats.get_all_wins(username).items():
-            self.__language.print_key("gui.show_stats", reason=win_reason, wins=str(wins))
+            self.__language.print_key("gui.show_stats.stat", reason=win_reason, wins=str(wins))
 
     def __toggle_track_stats(self):
         self.__core.should_track_stats = not self.__core.should_track_stats
@@ -153,7 +158,6 @@ class Gui(tk.Frame, PlayerOutput):
             return
 
         self.__core.difficulty = difficulty
-        self.__difficulty_entry.delete(0, 'end')
 
     def __ai_suggestion(self):
         coords = self.__core.ai_suggestion()
@@ -223,8 +227,3 @@ class Gui(tk.Frame, PlayerOutput):
         label = ttk.Label(self, text=self.__language.resolve_key("gui.victory", player=str(game.winner)))
         label.grid(row=8, column=0)
         self.__game_labels.add(label)
-
-
-root = tk.Tk()
-gui = Gui(root)
-gui.mainloop()
