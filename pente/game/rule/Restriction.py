@@ -25,7 +25,7 @@ class PatternRestriction(Rule):
     """
     def __init__(self, pattern: Pattern, conditions: Sequence[Condition], active_player: Optional[int] = None,
                  negate: bool = False):
-        super().__init__(pattern, Rule.Mode.ONE, conditions, [], [], active_player)
+        super().__init__(pattern, Rule.__Mode.ONE, conditions, [], [], active_player)
         self.__negate = negate
 
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:

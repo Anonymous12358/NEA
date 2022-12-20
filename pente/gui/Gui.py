@@ -105,7 +105,7 @@ class Gui(tk.Frame, PlayerOutput):
         ttk.Button(
             self,
             text=self.__language.resolve_key("gui.button.play"),
-            command=partial(self.__core.launch_game, (self, self))
+            command=partial(self.__core.launch_game, self)
         ).grid(row=y, column=2)
 
     def __help(self):
@@ -169,7 +169,7 @@ class Gui(tk.Frame, PlayerOutput):
         self.__core.save(self.__filename_entry.get() or None)
 
     def __load_game(self):
-        self.__core.load_game((self, self), self.__filename_entry.get())
+        self.__core.load_game(self, self.__filename_entry.get())
 
     def __toggle_autosave(self):
         self.__core.should_autosave = not self.__core.should_autosave

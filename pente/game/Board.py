@@ -36,8 +36,10 @@ class Board:
             raise ValueError(f"Invalid value {value} should be at least 0 or be {EMPTY}")
         self.__data[coords] = value
 
-    def get_tiles(self):
-        return self.__data.copy()
+    def copy(self):
+        result = Board(self.dimensions)
+        result.__data = self.__data.copy()
+        return result
 
     def enumerate(self):
         return np.ndenumerate(self.__data)
@@ -56,24 +58,14 @@ class Board:
         board.__data = array
         return board
 
-    def get_lines(self, centre: tuple[int, ...]) -> list[Line]:
-        """
-        Get all lines, orthogonal or diagonal in any number of dimensions, through a given center
-        :param centre: The coordinates of the center
-        :returns: A list of tuples of the index of the center in each line, and the line itself
-        """
-        return self.get_lines_on(self.__data, centre)
-
-    @staticmethod
-    def get_lines_on(darray: np.ndarray, centre: tuple[int, ...]) -> list[Line]:
+    def get_lines(self, center: tuple[int, ...]) -> list[Line]:
         """
         Get all lines, orthogonal or diagonal in any number of dimensions, through a given center on a given array
-        :param darray: The array in which to find lines
-        :param centre: The coordinates of the center
+        :param center: The coordinates of the center
         :returns: A list of tuples of the index of the center in each line, and the line itself
         """
-        
-        if len(centre) != darray.ndim:
+        darray = self.__data
+        if len(center) != darray.ndim:
             raise ValueError("Must provide a number of coordinates equal to the number of dimensions of the board")
 
         # Create an array of indexes so we can tell where the returned tiles came from
@@ -82,10 +74,10 @@ class Board:
 
         result = []
 
-        for directs_num in range(3 ** len(centre)):
+        for directs_num in range(3 ** len(center)):
             # The direction in which this line travels in each dimension
             # directs_num // 3**i % 3 extracts the ith digit of directs_num in ternary
-            directs = tuple(directs_num // 3 ** i % 3 - 1 for i in range(len(centre)))
+            directs = tuple(directs_num // 3 ** i % 3 - 1 for i in range(len(center)))
             # No line travels through 0 dimensions
             if all(direction == 0 for direction in directs):
                 continue
@@ -95,7 +87,7 @@ class Board:
             # We can't do just iarray because then changes in the board won't be reflected in the returned lines
             # Start with a slice(None) to skip the 0th dimension of iarray
             transform_indices = [slice(None)]
-            for ordinate, direction in zip(centre, directs):
+            for ordinate, direction in zip(center, directs):
                 if direction == -1:
                     transform_indices.append(slice(None, None, -1))
                 else:
@@ -106,7 +98,7 @@ class Board:
             # Transform centre coordinates so that they are coordinates into the transformed array
             transformed_centre = tuple(
                 length-1 - ordinate if direction == -1 else ordinate
-                for length, ordinate, direction in zip(darray.shape, centre, directs)
+                for length, ordinate, direction in zip(darray.shape, center, directs)
             )
 
             # end_distances are the distances from the center to the end of the transformed array in each dimension

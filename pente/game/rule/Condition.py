@@ -14,7 +14,7 @@ class ScoreCondition(Applicable):
 
     def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]) -> bool:
         scores = gamestate.scores[self.__memo]
-        player = self.resolve_player_index(gamestate, locations, center, self.__player_index)
+        player = self._resolve_player_index(gamestate, locations, center, self.__player_index)
         if (self.__minimum is not None and scores[player] < self.__minimum or
                 self.__maximum is not None and scores[player] > self.__maximum):
             return False

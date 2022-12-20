@@ -9,7 +9,7 @@ from pente.game.GameState import GameState
 class Applicable(ABC):
     """Anything that looks at a pattern match is applicable"""
 
-    class PlayerIndexRogue(IntEnum):
+    class _PlayerIndexRogue(IntEnum):
         """The rogue values used for player_index keys in datapacks"""
         CENTER = -1
         ACTIVE = -2
@@ -20,8 +20,8 @@ class Applicable(ABC):
         raise NotImplementedError
 
     @staticmethod
-    def resolve_player_index(gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...],
-                             player_index: int) -> int:
+    def _resolve_player_index(gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...],
+                              player_index: int) -> int:
         """
         Resolve a player index specified within a rule, including the rogue values -1, -2, and -3
         :param gamestate: The gamestate within which to resolve the index
@@ -30,11 +30,11 @@ class Applicable(ABC):
         :param player_index: The index to resolve
         :returns: The player at that index
         """
-        if player_index == Applicable.PlayerIndexRogue.REMOVE:
+        if player_index == Applicable._PlayerIndexRogue.REMOVE:
             return EMPTY
-        elif player_index == Applicable.PlayerIndexRogue.ACTIVE:
+        elif player_index == Applicable._PlayerIndexRogue.ACTIVE:
             return gamestate.active_player
-        elif player_index == Applicable.PlayerIndexRogue.CENTER:
+        elif player_index == Applicable._PlayerIndexRogue.CENTER:
             return gamestate.board[center]
         else:
             player = gamestate.board[locations[player_index]]

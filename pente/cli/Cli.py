@@ -86,12 +86,13 @@ class Cli:
     @command
     def help(self):
         """Display a list of commands"""
+        last_func = None
         for name, func in self.__COMMANDS.items():
+            # If a command is registered under multiple names, consider only the first
+            if func == last_func:
+                continue
             print(f"{name} " + " ".join(f"<{param}>" for param in inspect.signature(func).parameters))
-            doc = inspect.getdoc(func)
-            if doc is not None:
-                for line in doc.splitlines():
-                    print(f"    {line}")
+            self.__language.print_key(f"cli.help.{name}")
 
     @command
     def register(self, username: str):
@@ -203,8 +204,8 @@ class Cli:
                 return
 
         colors = self.__get_color(0), self.__get_color(1)
-        player_outputs = CliPlayerOutput(self.__language, colors), CliPlayerOutput(self.__language, colors)
-        response = self.__core.launch_game(player_outputs)
+        player_output = CliPlayerOutput(self.__language, colors)
+        response = self.__core.launch_game(player_output)
         if response is Core.LaunchGameResponse.ALREADY_PLAYING:
             self.__language.print_key("cli.launch.already_playing")
         elif response is Core.LaunchGameResponse.NO_DATA:
@@ -212,7 +213,7 @@ class Cli:
             if not self.load_data("pente"):
                 self.__language.print_key("cli.launch.no_data")
                 return
-            self.__core.launch_game(player_outputs)
+            self.__core.launch_game(player_output)
 
     def __confirm(self, key: str, **kwargs: str) -> bool:
         """
@@ -246,8 +247,6 @@ class Cli:
         response = self.__core.ui_move(coords)
         if response is Core.MoveResponse.NO_GAME:
             self.__language.print_key("cli.move.no_game")
-        elif response is Core.MoveResponse.NOT_TURN:
-            self.__language.print_key("cli.move.not_turn")
         elif response is Core.MoveResponse.ILLEGAL:
             self.__language.print_key("cli.move.illegal")
 
@@ -264,8 +263,7 @@ class Cli:
     def load_game(self, file_name: str):
         """Load a saved game from the save folder, by the given file name."""
         colors = self.__get_color(0), self.__get_color(1)
-        player_outputs = CliPlayerOutput(self.__language, colors), CliPlayerOutput(self.__language, colors)
-        response = self.__core.load_game(player_outputs, file_name)
+        response = self.__core.load_game(CliPlayerOutput(self.__language, colors), file_name)
         if response is Core.LaunchGameResponse.ALREADY_PLAYING:
             self.__language.print_key("cli.launch.already_playing")
         elif response is Core.LaunchGameResponse.NO_DATA:
@@ -273,7 +271,7 @@ class Cli:
 
     @command("autosave")
     def toggle_autosave(self):
-        """Toggle whether or not the game is automatically saved into saves/autosave.json before every move. Off by
+        """Toggle whether or not the game is automatically saved into saves/autosave.json before every move. On by
         default."""
         self.__core.should_autosave = not self.__core.should_autosave
         mode = self.__language.resolve_key("cli.toggle." + ("on" if self.__core.should_autosave else "off"))
@@ -323,7 +321,7 @@ class Cli:
     @command("showstats")
     def show_stats(self, account_index: str, win_reason: str):
         """Display the number of games a given account, by account index, has won in a given way. Default win reasons
-        are gomoku.victory for five in a row, and pente.captures, and .concede. .all to display all reasons."""
+        are gomoku.victory for five in a row, pente.captures, and .concede. .all to display all reasons."""
         try:
             account_index = int(account_index)
         except ValueError:

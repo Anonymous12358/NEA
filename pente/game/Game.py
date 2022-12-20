@@ -87,7 +87,7 @@ class Game:
         :param player: The color of the tile to place; if None, use the next player in turn order
         """
         if player is None:
-            player = (self.__gamestate.active_player + 1) % NUM_PLAYERS
+            player = self.next_player
         if not self.can_place(coords, player):
             return
 

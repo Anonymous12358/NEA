@@ -10,7 +10,7 @@ class BoardAction(Applicable):
         self.__player_index = player_index
 
     def apply(self, gamestate: GameState, locations: Sequence[tuple[int, ...]], center: tuple[int, ...]) -> bool:
-        player = self.resolve_player_index(gamestate, locations, center, self.__player_index)
+        player = self._resolve_player_index(gamestate, locations, center, self.__player_index)
         location = locations[self.__location_index]
         gamestate.board[location] = player
         return True

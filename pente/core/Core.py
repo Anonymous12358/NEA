@@ -49,7 +49,7 @@ class Core:
 
         self.__game: Optional[Game] = None
         self.__game_pack_names: tuple[str, ...] = ()
-        self.__player_outputs: Optional[tuple[PlayerOutput, PlayerOutput]] = None
+        self.__player_output: Optional[PlayerOutput] = None
 
     @property
     def accounts(self):
@@ -108,7 +108,7 @@ class Core:
         return True
 
     def __update_players(self):
-        self.__player_outputs[0].send_update(self.__game, 0, True)
+        self.__player_output.send_update(self.__game, 0, True)
 
     def __end_game(self):
         if self.should_track_stats:
@@ -117,24 +117,23 @@ class Core:
                 wins = stats.get_wins(username, self.__game.win_reason)
                 stats.set_wins(username, self.__game.win_reason, wins + 1)
 
-        self.__player_outputs[0].send_victory(self.__game, 0, True)
+        self.__player_output.send_victory(self.__game, 0, True)
         self.__game = None
         self.__mode = None
-        self.__player_outputs = None
+        self.__player_output = None
 
     class LaunchGameResponse(_ResponseEnum):
         OK = auto()
         ALREADY_PLAYING = auto()
         NO_DATA = auto()
 
-    def launch_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], gamestate: Optional[GameState] = None
-                    ) -> LaunchGameResponse:
+    def launch_game(self, player_output: PlayerOutput, gamestate: Optional[GameState] = None) -> LaunchGameResponse:
         if self.__game is not None:
             return Core.LaunchGameResponse.ALREADY_PLAYING
         if self.__data is None:
             return Core.LaunchGameResponse.NO_DATA
 
-        self.__player_outputs = player_outputs
+        self.__player_output = player_output
 
         self.__game_pack_names = self.__pack_names
 
@@ -146,7 +145,7 @@ class Core:
         if self.__game is None:
             return False
         else:
-            self.__game.winner = (self.__get_ui_player() + 1) % 2
+            self.__game.winner = (self.__game.next_player + 1) % 2
             self.__game.win_reason = '.concede'
             self.__end_game()
             return True
@@ -154,21 +153,11 @@ class Core:
     class MoveResponse(_ResponseEnum):
         OK = auto()
         NO_GAME = auto()
-        NOT_TURN = auto()
         ILLEGAL = auto()
-
-    def __get_ui_player(self):
-        """
-        Get which player index the UI is currently controlling
-        """
-        return self.__game.next_player
 
     def ui_move(self, coords: tuple[int, ...]) -> MoveResponse:
         if self.__game is None:
             return Core.MoveResponse.NO_GAME
-
-        if self.__game.next_player != self.__get_ui_player():
-            return Core.MoveResponse.NOT_TURN
 
         if not self.__game.can_place(coords):
             return Core.MoveResponse.ILLEGAL
@@ -176,11 +165,11 @@ class Core:
         if self.should_autosave:
             self.save("autosave")
 
-        self.__move(self.__get_ui_player(), coords)
+        self.__move(coords)
         return Core.MoveResponse.OK
 
-    def __move(self, player: int, coords: tuple[int, ...]):
-        self.__game.place(coords, player)
+    def __move(self, coords: tuple[int, ...]):
+        self.__game.place(coords)
 
         if self.__game.winner is not None:
             self.__end_game()
@@ -204,7 +193,7 @@ class Core:
 
         return name
 
-    def load_game(self, player_outputs: tuple[PlayerOutput, PlayerOutput], file_name: str) -> LaunchGameResponse:
+    def load_game(self, player_output: PlayerOutput, file_name: str) -> LaunchGameResponse:
         try:
             gamestate, dct = load_gamestate.load_gamestate(self.__language, file_name)
         except (ScannerError, JSONDecodeError, FileNotFoundError, PermissionError):
@@ -216,7 +205,7 @@ class Core:
         if dct["datapacks"] != self.__pack_names:
             self.load_data(dct["datapacks"])
 
-        return self.launch_game(player_outputs, gamestate)
+        return self.launch_game(player_output, gamestate)
 
     class UndoResponse(_ResponseEnum):
         OK = auto()
@@ -236,7 +225,7 @@ class Core:
         self.__game = None
 
         try:
-            load_response = self.load_game(self.__player_outputs, "autosave")
+            load_response = self.load_game(self.__player_output, "autosave")
 
         except RuntimeError:
             self.__game = previous_game

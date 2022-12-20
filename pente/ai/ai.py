@@ -46,10 +46,8 @@ _SCORES = {
 }
 
 
-# TODO Use the actual board class, now no segmentation is needed
-# Then we also don't need get_lines_on
-def score_play(tiles: np.ndarray, center: tuple[int, ...]):
-    lines = Board.get_lines_on(tiles, center)
+def _score_play(board: Board, center: tuple[int, ...]):
+    lines = board.get_lines(center)
     result = 0
     for pattern, score in _SCORES.items():
         for line in lines:
@@ -59,20 +57,20 @@ def score_play(tiles: np.ndarray, center: tuple[int, ...]):
 
 
 def best_move(gamestate: GameState, difficulty: float) -> tuple[int, ...]:
-    tiles = gamestate.board.get_tiles()
+    board = gamestate.board.copy()
 
-    best_play, best_score = (0,) * tiles.ndim, float('-inf')
-    for test_play in np.ndindex(tiles.shape):
-        if tiles[test_play] != EMPTY:
+    best_play, best_score = (0,) * len(board.dimensions), float('-inf')
+    for test_play in np.ndindex(board.dimensions):
+        if board[test_play] != EMPTY:
             continue
 
-        tiles[test_play] = gamestate.next_player
-        test_score = score_play(tiles, test_play)
+        board[test_play] = gamestate.next_player
+        test_score = _score_play(board, test_play)
         test_score += difficulty * random.random()
         if test_score > best_score:
             best_play = test_play
             best_score = test_score
 
-        tiles[test_play] = EMPTY
+        board[test_play] = EMPTY
 
     return best_play

@@ -18,7 +18,7 @@ class CliPlayerOutput(PlayerOutput):
         self.__colors = colors
 
     def send_update(self, game: Game, your_index: int, is_hotseat: bool):
-        print(self.stringify_board(game.gamestate.board))
+        print(self.__stringify_board(game.gamestate.board))
 
         displayable_scores = game.get_displayable_scores()
         if len(displayable_scores) == 1:
@@ -42,9 +42,9 @@ class CliPlayerOutput(PlayerOutput):
         else:
             self.__language.print_key("cli.output.victory.you")
 
-        print(self.stringify_board(game.gamestate.board))
+        print(self.__stringify_board(game.gamestate.board))
 
-    def stringify_board(self, board: Board):
+    def __stringify_board(self, board: Board):
         result = ""
         # Column numbers
         if len(board.dimensions) <= 2:
