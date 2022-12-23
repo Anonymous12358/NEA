@@ -1,7 +1,7 @@
 """
 Manages the loading of language files and the processing of output
 """
-
+import traceback
 from collections.abc import Callable, Collection
 
 
@@ -23,7 +23,8 @@ class Language:
                 lines = file.readlines()
         except (FileNotFoundError, PermissionError):
             self.print_key("error.file_absent.lang", language=name)
-            raise
+            traceback.print_exc()
+            return
 
         for line in lines:
             if line == "":
@@ -54,7 +55,7 @@ class Language:
             return string
         else:
             params = " ".join(f"{param}={value}" for param, value in kwargs.items())
-            return f"{key} {params}"
+            return f"{key} {params}\n"
 
     def print_key(self, key: str, /, **kwargs: str):
         string = self.resolve_key(key, **kwargs)

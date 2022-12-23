@@ -29,7 +29,7 @@ def command(name_or_func):
 
 
 class Cli:
-    # Maps color names (which are parts of language keys) to color codes (part of the ANSI escape to set the color)
+    # Maps colour names (which are parts of language keys) to colour codes (part of the ANSI escape to set the colour)
     __COLORS = {
         "default": '0',
         "black": '30',
@@ -91,6 +91,7 @@ class Cli:
             # If a command is registered under multiple names, consider only the first
             if func == last_func:
                 continue
+            last_func = func
             print(f"{name} " + " ".join(f"<{param}>" for param in inspect.signature(func).parameters))
             self.__language.print_key(f"cli.help.{name}")
 

@@ -13,7 +13,7 @@ from pente.game.Game import Game
 
 class Gui(tk.Frame, PlayerOutput):
     def __init__(self):
-        self.__language = Language(['en_UK'], partial(print, end=""))
+        self.__language = Language(["en_UK"], partial(print, end=""))
         self.__core = Core(self.__language)
         self.__game_buttons: list[list[ttk.Button]] = [[] for _ in range(19)]
         self.__game_labels = set()
