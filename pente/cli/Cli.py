@@ -14,6 +14,8 @@ from pente.core.Core import Core
 _COMMANDS = {}
 
 
+# A:other
+
 # Decorator to register command in _COMMANDS
 def command(name_or_func):
     # Called as @command

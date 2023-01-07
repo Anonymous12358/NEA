@@ -5,6 +5,9 @@ from abc import ABC, abstractmethod
 from pente.game.Game import Game
 
 
+# A:complex-oop
+# The PlayerOutput interface is implemented separately by each UI, so that the Core can call the same methods regardless
+# of the UI in use
 class PlayerOutput(ABC):
     @abstractmethod
     def send_update(self, game: Game, your_index: int, is_hotseat: bool):

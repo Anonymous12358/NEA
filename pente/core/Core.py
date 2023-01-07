@@ -188,6 +188,8 @@ class Core:
         save["accounts"] = self.__accounts
 
         Path("saves").mkdir(parents=True, exist_ok=True)
+        # B:file-handling
+        # Write the serialised gamestate to a file to save it
         with open(name, 'w') as file:
             file.write(json.dumps(save))
 

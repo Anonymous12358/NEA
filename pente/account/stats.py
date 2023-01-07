@@ -16,6 +16,12 @@ class Wins(peewee.Model):
         primary_key = peewee.CompositeKey('id', 'win_reason')
 
 
+# A:cross-table-sql
+# Use SQL to interact with the database when a player wins a game or requests the statistics
+# Note that the strings for the queries are constructed in the peewee library, based on Python objects
+# Delegating the construction of queries to a well-tested library better protects against SQL injection
+# The Wins table refers to users by their UUID rather than name, so queries are cross-table to provide access to records
+# by account name
 def get_wins(username: str, win_reason: str) -> int:
     query = Wins.select().join(Account).where(Account.username == username, Wins.win_reason == win_reason)
     if not query.exists():

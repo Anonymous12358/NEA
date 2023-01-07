@@ -14,6 +14,10 @@ class DisjunctionRestriction:
     def __init__(self, conjunctions: Collection[Collection[Restriction]]):
         self.__conjunctions = conjunctions
 
+    # A:recursion
+    # A DisjunctionRestriction can have any number of children which may themselves be DisjunctionRestrictions
+    # The truth value of a DisjunctionRestriction is therefore determined recursively
+    # The base case here is based on polymorphism - we recurse iff a child is a DisjunctionRestriction
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:
         return any(all(restriction.invoke(gamestate, center, lines) for restriction in conjunction)
                    for conjunction in self.__conjunctions)
@@ -25,7 +29,7 @@ class PatternRestriction(Rule):
     """
     def __init__(self, pattern: Pattern, conditions: Sequence[Condition], active_player: Optional[int] = None,
                  negate: bool = False):
-        super().__init__(pattern, Rule.__Mode.ONE, conditions, [], [], active_player)
+        super().__init__(pattern, Rule.Mode.ONE, conditions, [], [], active_player)
         self.__negate = negate
 
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:
@@ -33,4 +37,6 @@ class PatternRestriction(Rule):
         return result
 
 
+# A:other
+# Sum type
 Restriction = DisjunctionRestriction | PatternRestriction

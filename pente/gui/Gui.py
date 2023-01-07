@@ -11,6 +11,8 @@ from pente.game.Board import Board, EMPTY
 from pente.game.Game import Game
 
 
+# A:complex-oop
+# Gui conforms to the interface of PlayerOutput so it can be used by the Core
 class Gui(tk.Frame, PlayerOutput):
     def __init__(self):
         self.__language = Language(["en_UK"], partial(print, end=""))
@@ -21,6 +23,7 @@ class Gui(tk.Frame, PlayerOutput):
         super().__init__(tk.Tk())
         self.grid()
         self.winfo_toplevel().title(self.__language.resolve_key("gui.name"))
+        # Used to highlight buttons by turning the text green
         style = ttk.Style(self)
         style.configure('highlight.TButton', foreground='#00D040')
 

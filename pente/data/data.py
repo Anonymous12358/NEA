@@ -125,6 +125,7 @@ def _should_load(qualname: str, header: DatapackHeader, loaded_names: Collection
     :param language: The language in which to log.
     :returns: Whether or not the name should be loaded
     """
+    # A:other
     owner, _, name = qualname.rpartition(".")
     if owner == "" or name == "":
         language.print_key("error.datapack.unqualified_name")
@@ -154,6 +155,8 @@ def _should_load(qualname: str, header: DatapackHeader, loaded_names: Collection
 
 
 def _load_schema(language: Language) -> dict:
+    # B:file-handling
+    # Read the file in which the datapack schema is stored, so it can be applied to datapacks
     try:
         with open("resources/datapack/schema.yml", 'r') as schema_file:
             return yaml.safe_load(schema_file)
@@ -176,6 +179,11 @@ def _get_load_order(names: Sequence[str], schema: dict, language: Language) -> l
     """
     # Record packs and dependencies
     # An edge from one pack to another means the first pack must be loaded first
+
+    # A:graph-traversal
+    # A graph maintains the dependency and load_after relationships of all registered packs
+    # Standard graph algorithms can be used to find packs whose dependencies and load_afters have all been loaded, and
+    # to determine if there is a circular dependency
     network = nx.DiGraph()
     headers = {}
     for name in names:
@@ -208,17 +216,20 @@ def _get_load_order(names: Sequence[str], schema: dict, language: Language) -> l
 def _register_pack_and_dependencies(network: nx.DiGraph, headers: dict[str, DatapackHeader], name: str, schema: dict,
                                     language: Language):
     """
-    Modify `network` to include a given datapack name, and `headers` to associate that name with a datapack header.
+    Modify `network` to include a given datapack name, and `headers` to associate that name with a datapack header. Do
+    the same for all dependencies recursively.
     """
     if name in headers:
-        # Pack is already loaded, but its recorded dependencies may still need to be updated
+        # Pack is already loaded, but its recorded dependencies may still need to be updated, because other packs may
+        # have been added
         header = headers[name]
     else:
         header = _load_header(name, schema, language)
         headers[name] = header
         network.add_node(name)
 
-    # Record dependencies
+    # Record dependencies on and from other already-loaded packs. Those with unloaded packs will be recorded when those
+    # packs are loaded.
     for other_name in network:
         other_header = headers[other_name]
         if name in other_header.dependencies:
@@ -234,6 +245,9 @@ def _register_pack_and_dependencies(network: nx.DiGraph, headers: dict[str, Data
 
     # Process dependencies
     for dependency in header.dependencies:
+        # A:recursion
+        # Packs may cause other packs to load recursively by dependencies. This function calls itself for each
+        # dependency of this pack
         _register_pack_and_dependencies(network, headers, dependency, schema, language)
 
 
@@ -246,6 +260,9 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
     :returns: The datapack header.
     """
     # Get the datapack
+
+    # B:file-handling
+    # Read the file containing the datapack to load
     try:
         with open(f"resources/datapack/{name}.json", 'r') as file:
             dct = json.load(file)

@@ -38,5 +38,8 @@ class CoordsCondition(Applicable):
             return True
 
 
+# A:other
+# Sum type isn't really OOP but is part of the object model
+
 # Sum type is neater than empty superclass
 Condition = ScoreCondition | CoordsCondition

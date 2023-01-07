@@ -18,6 +18,8 @@ class Language:
         specify them.
         :param name: The name of the file to load
         """
+        # B:file-handling
+        # Read the language file and parse the custom format
         try:
             with open("resources/lang/" + name + ".lang", 'r') as file:
                 lines = file.readlines()
