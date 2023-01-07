@@ -78,7 +78,6 @@ class CliPlayerOutput(PlayerOutput):
                 if result and result[-1] == char and result[-2] != "\n":
                     result += char
                 else:
-                    print(self.__colors[tile])
                     result += f'\x1b[{self.__colors[tile]}m{chr(tile + 48)}'
 
         result += '\x1b[0m'

@@ -1,2 +1,2 @@
-cd "$(dirname "$1")" || exit
+cd "$(dirname "$0")" || exit
 python3 pente/main.py cli

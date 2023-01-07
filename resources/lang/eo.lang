@@ -1,7 +1,7 @@
 .name=Esperanto
-.warning="~AVERTO ~ "^
+.warning="~AVERTO~~ "^
 .error="##ERARO## "^
-error.file_absent.lang=The required lang file {language} cannot be found in resources/lang. Text will revert to language keys.
+error.file_absent.lang=Ĉi tiu teksto neniam videblos laŭ normala ludado. Aŭ ĉi tiu dosiero troveblas, aŭ ne.
 error.file_absent.datapack_schema=datapack/schema.yml is missing. Reinstall the game or restore files from backup.
 error.file_absent.save_schema=save_schema.yml is missing. Reinstall the game or restore files from backup.
 error.datapack.invalid.schema=datapack/schema.yml is invalid (did you change it?). Reinstall the game or restore files from backup.

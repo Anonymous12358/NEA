@@ -40,14 +40,14 @@ class Cli:
         "magenta": '35',
         "cyan": '36',
         "white": '37',
-        "bright_black": '30',
-        "bright_red": '31',
-        "bright_green": '32',
-        "bright_yellow": '33',
-        "bright_blue": '34',
-        "bright_magenta": '35',
-        "bright_cyan": '36',
-        "bright_white": '37',
+        "bright_black": '30;1',
+        "bright_red": '31;1',
+        "bright_green": '32;1',
+        "bright_yellow": '33;1',
+        "bright_blue": '34;1',
+        "bright_magenta": '35;1',
+        "bright_cyan": '36;1',
+        "bright_white": '37;1',
     }
 
     def __init__(self):
@@ -99,6 +99,8 @@ class Cli:
     def register(self, username: str):
         """Register an account with a given username; password entered separately"""
         self.__language.print_key("cli.login.password_prompt")
+        # Flush the print buffer before getpass can disable echo
+        print(end="", flush=True)
         password = getpass.getpass("")
         if accounts.register(username, password) is None:
             self.__language.print_key("cli.register.duplicate_username")
@@ -113,6 +115,7 @@ class Cli:
             return
 
         self.__language.print_key("cli.login.password_prompt")
+        print(end="", flush=True)
         password = getpass.getpass("")
         response = self.__core.login(username, password)
         if response is Core.LoginResponse.INCORRECT_DETAILS:
