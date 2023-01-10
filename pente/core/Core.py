@@ -229,7 +229,8 @@ class Core:
         try:
             load_response = self.load_game(self.__player_output, "autosave")
         finally:
-            self.__game = previous_game
+            if self.__game is None:
+                self.__game = previous_game
         # launch_game will never return ALREADY_PLAYING since we set self.__game = None
         if load_response is Core.LaunchGameResponse.NO_DATA:
             self.__game = previous_game

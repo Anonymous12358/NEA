@@ -98,7 +98,7 @@ def load_packs(names: Sequence[str], language: Language) -> Data:
 
     # Sort by priority
     # Stable sort so that ties are broken by insertion order, ie by datapack and listed order within datapack
-    sorted_rules = [v for k, v in sorted(rules.items(), key=lambda item: priorities[item[0]])]
+    sorted_rules = _sort_rules(rules, priorities)
 
     # Board
     dimensions = tuple()
@@ -294,3 +294,14 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
         language.print_key("warning.datapack.double_load_after", pack=dct["name"])
 
     return DatapackHeader(dct["name"], dependencies, load_after, dct)
+
+
+# A:sorting
+# Sort rules by their specified priorities to improve compatibilities of datapacks. Because there is a small range of
+# possible priorities, this algorithm has time complexity O(n), better than CPython's default timsort (mergesort) for
+# this usecase.
+def _sort_rules(rules: dict[str, Rule], priorities: dict[str, int]) -> list[Rule]:
+    categories = [[] for _ in range(max(priorities.values()) + 1)]
+    for name, rule in rules.items():
+        categories[priorities[name]].append(rule)
+    return list(itertools.chain(*categories))
