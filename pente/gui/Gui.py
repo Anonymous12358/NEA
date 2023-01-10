@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 from functools import partial
 from tkinter import ttk
@@ -9,6 +10,13 @@ from pente.core.PlayerOutput import PlayerOutput
 from pente.data.Language import Language
 from pente.game.Board import Board, EMPTY
 from pente.game.Game import Game
+
+if sys.platform == 'linux':
+    _BOARD_FONT_SIZE = 17
+elif sys.platform == 'darwin':
+    _BOARD_FONT_SIZE = 20
+else:
+    _BOARD_FONT_SIZE = 14
 
 
 # A:complex-oop
@@ -206,7 +214,7 @@ class Gui(tk.Frame, PlayerOutput):
                 widget = ttk.Button(self, text=tile, command=partial(self.__core.ui_move, (y, x)), width=1)
                 self.__game_buttons[y].append(widget)
             else:
-                widget = ttk.Label(self, text=tile, font=(None, 20))
+                widget = ttk.Label(self, text=tile, font=('Courier New', 20))
                 self.__game_labels.add(widget)
             widget.grid(row=y, column=3+x)
 
