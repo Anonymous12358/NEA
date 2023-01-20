@@ -19,7 +19,7 @@ properties:
         type: integer
   active_player:
     type: integer
-    minimum: 0
+    minimum: -1
   datapacks:
     type: array
     items:

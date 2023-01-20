@@ -140,5 +140,5 @@ gui.button.autosave=Autosave^
 gui.button.undo=Undo^
 gui.button.play=Play^
 gui.show_stats.header=Stats:
-gui.show_stat.stats={wins} games won by {reason}
+gui.show_stats.stat={wins} games won by {reason}
 gui.victory=P{player} wins!^
