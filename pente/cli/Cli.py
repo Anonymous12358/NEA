@@ -15,6 +15,7 @@ _COMMANDS = {}
 
 
 # A:other
+# Defined a decorator, which is a higher-order function, to register CLI commands conveniently by annotating methods
 
 # Decorator to register command in _COMMANDS
 def command(name_or_func):

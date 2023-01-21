@@ -38,5 +38,6 @@ class PatternRestriction(Rule):
 
 
 # A:other
-# Sum type
+# Defined Restriction as a sum type of two classes, to avoid the need for an abstract class which would associate the
+# classes but not define functionality
 Restriction = DisjunctionRestriction | PatternRestriction

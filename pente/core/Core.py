@@ -27,7 +27,7 @@ class _ResponseEnum(Enum):
     Response enums are used to represent to the UI what happened in the Core when the request was made
     """
 
-    # so/73492285
+    # Credit: https://stackoverflow.com/questions/73492285/subclass-enum-to-add-validation
     def __init_subclass__(cls, **kwargs):
         if 'OK' not in cls.__members__:
             raise ValueError("Response enum must have an OK element")

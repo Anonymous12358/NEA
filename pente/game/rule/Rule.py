@@ -32,8 +32,6 @@ class Rule:
         if self.__active_player is not None and gamestate.active_player != self.__active_player:
             return False
 
-        # A:other
-        # Might count as a complex (or B-simple) algorithm? Or even "use of sets" as a complex data structure?
         matched_directions = set()
         matches = []
         for i, line in enumerate(lines):

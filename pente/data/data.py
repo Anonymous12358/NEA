@@ -125,7 +125,6 @@ def _should_load(qualname: str, header: DatapackHeader, loaded_names: Collection
     :param language: The language in which to log.
     :returns: Whether or not the name should be loaded
     """
-    # A:other
     owner, _, name = qualname.rpartition(".")
     if owner == "" or name == "":
         language.print_key("error.datapack.unqualified_name")

@@ -10,7 +10,7 @@ from pente.game.GameState import GameState
 class ScoreAction(Applicable):
     class Operation(Enum):
         # functools.partial is used as a workaround to allow callable enum members
-        # credit so/40338625
+        # Credit: https://stackoverflow.com/questions/40338652/how-to-define-enum-values-that-are-functions
         SET = partial(lambda a, b: b)
         ADD = partial(operator.add)
         MULTIPLY = partial(operator.mul)

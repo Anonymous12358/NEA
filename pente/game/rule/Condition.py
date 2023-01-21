@@ -39,7 +39,8 @@ class CoordsCondition(Applicable):
 
 
 # A:other
-# Sum type isn't really OOP but is part of the object model
+# Defined Condition as a sum type of two classes, to avoid the need for an abstract class which would associate the
+# classes but not define functionality
 
 # Sum type is neater than empty superclass
 Condition = ScoreCondition | CoordsCondition
