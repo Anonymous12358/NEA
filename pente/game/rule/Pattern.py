@@ -27,9 +27,11 @@ class Pattern:
 
         self.__string = s.replace("[", "").replace("]", "")
 
-    # A:complex-algorithm
-    # Pattern matching. Datapacks define patterns which affect whether and how rules are invoked. Patterns are matched
-    # against lines of tiles on the board.
+    ####################################################################################################################
+    # GROUP A SKILL: COMPLEX USER-DEFINED ALGORITHMS - PATTERN MATCHING                                                #
+    # Pattern matching. Datapacks define patterns which affect whether and how rules are invoked. Patterns are matched #
+    # against lines of tiles on the board.                                                                             #
+    ####################################################################################################################
     def match_line(self, line: Board.Line) -> Optional[Sequence[tuple[int, ...]]]:
         """
         Attempt to match this pattern to a given line and center

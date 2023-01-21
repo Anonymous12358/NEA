@@ -20,8 +20,10 @@ def load_gamestate(language: Language, file_name: str) -> tuple[GameState, dict]
     """
     :returns: The loaded gamestate, and a dictionary for direct access to the validated loaded data
     """
-    # B:file-handling
-    # Read the file containing the serialised gamestate to load
+    #############################################################
+    # GROUP B SKILL: WRITING AND READING FROM FILES             #
+    # Read the file containing the serialised gamestate to load #
+    #############################################################
     try:
         with open(f"saves/{file_name}.json", 'r') as file:
             dct = json.loads(file.read())
@@ -69,8 +71,10 @@ def load_gamestate(language: Language, file_name: str) -> tuple[GameState, dict]
 
 
 def _load_schema(language: Language) -> dict:
-    # B:file-handling
-    # Read the file containing the schema for validating the saved gamestate
+    ##########################################################################
+    # GROUP B SKILL: WRITING AND READING FROM FILES                          #
+    # Read the file containing the schema for validating the saved gamestate #
+    ##########################################################################
     try:
         with open("resources/save_schema.yml", 'r') as schema_file:
             return yaml.safe_load(schema_file)

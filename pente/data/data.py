@@ -154,8 +154,10 @@ def _should_load(qualname: str, header: DatapackHeader, loaded_names: Collection
 
 
 def _load_schema(language: Language) -> dict:
-    # B:file-handling
-    # Read the file in which the datapack schema is stored, so it can be applied to datapacks
+    ###########################################################################################
+    # GROUP B SKILL: WRITING AND READING FROM FILES                                           #
+    # Read the file in which the datapack schema is stored, so it can be applied to datapacks #
+    ###########################################################################################
     try:
         with open("resources/datapack/schema.yml", 'r') as schema_file:
             return yaml.safe_load(schema_file)
@@ -179,9 +181,11 @@ def _get_load_order(names: Sequence[str], schema: dict, language: Language) -> l
     # Record packs and dependencies
     # An edge from one pack to another means the first pack must be loaded first
 
-    # A:graph-traversal
-    # A graph maintains the dependency and load_after relationships of all registered packs
-    # Standard graph algorithms can be used to find packs whose dependencies and load_afters have all been loaded, and
+    ####################################################################################################################
+    # GROUP A SKILL: GRAPH/TREE TRAVERSAL                                                                              #
+    # A graph maintains the dependency and load_after relationships of all registered packs                            #
+    # Standard graph algorithms can be used to find packs whose dependencies and load_afters have all been loaded, and #
+    ####################################################################################################################
     # to determine if there is a circular dependency
     network = nx.DiGraph()
     headers = {}
@@ -244,9 +248,11 @@ def _register_pack_and_dependencies(network: nx.DiGraph, headers: dict[str, Data
 
     # Process dependencies
     for dependency in header.dependencies:
-        # A:recursion
-        # Packs may cause other packs to load recursively by dependencies. This function calls itself for each
-        # dependency of this pack
+        ########################################################################################################
+        # GROUP A SKILL: RECURSIVE ALGORITHMS                                                                  #
+        # Packs may cause other packs to load recursively by dependencies. This function calls itself for each #
+        # dependency of this pack. The base case is a pack with no dependencies.                               #
+        ########################################################################################################
         _register_pack_and_dependencies(network, headers, dependency, schema, language)
 
 
@@ -260,8 +266,10 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
     """
     # Get the datapack
 
-    # B:file-handling
-    # Read the file containing the datapack to load
+    #################################################
+    # GROUP B SKILL: WRITING AND READING FROM FILES #
+    # Read the file containing the datapack to load #
+    #################################################
     try:
         with open(f"resources/datapack/{name}.json", 'r') as file:
             dct = json.load(file)
@@ -295,10 +303,12 @@ def _load_header(name: str, schema: dict, language: Language) -> DatapackHeader:
     return DatapackHeader(dct["name"], dependencies, load_after, dct)
 
 
-# A:sorting
-# Sort rules by their specified priorities to improve compatibilities of datapacks. Because there is a small range of
-# possible priorities, this algorithm has time complexity O(n), better than CPython's default timsort (mergesort) for
-# this usecase.
+#######################################################################################################################
+# GROUP A SKILL: MERGESORT OR SIMILARLY EFFICIENT SORT                                                                #
+# Sort rules by their specified priorities to improve compatibilities of datapacks. Because there is a small range of #
+# possible priorities, this algorithm has time complexity O(n), better than CPython's default timsort (mergesort) for #
+# this usecase.                                                                                                       #
+#######################################################################################################################
 def _sort_rules(rules: dict[str, Rule], priorities: dict[str, int]) -> list[Rule]:
     categories = [[] for _ in range(max(priorities.values()) + 1)]
     for name, rule in rules.items():

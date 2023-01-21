@@ -56,8 +56,10 @@ def _score_play(board: Board, center: tuple[int, ...]):
     return result
 
 
-# A:complex-algorithm:optimisation
-# We find the best move by scoring every move, and keeping track of the best move and best score
+##################################################################################################
+# GROUP A SKILL: COMPLEX USER-DEFINED ALGORITHMS - OPTIMISATION                                  #
+# We find the best move by scoring every move, and keeping track of the best move and best score #
+##################################################################################################
 def best_move(gamestate: GameState, difficulty: float) -> tuple[int, ...]:
     board = gamestate.board.copy()
 

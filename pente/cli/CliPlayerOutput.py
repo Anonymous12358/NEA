@@ -12,8 +12,10 @@ from pente.game.Game import Game
 from pente.core.PlayerOutput import PlayerOutput
 
 
-# B:complex-oop
-# CliPlayerOutput conforms to the interface of PlayerOutput so it can be used by the Core
+###########################################################################################
+# GROUP A SKILL: COMPLEX USER-DEFINED USE OF OOP MODEL                                    #
+# CliPlayerOutput conforms to the interface of PlayerOutput so it can be used by the Core #
+###########################################################################################
 class CliPlayerOutput(PlayerOutput):
     def __init__(self, language: Language, colors: tuple[str, str]):
         self.__language = language

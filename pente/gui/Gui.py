@@ -19,8 +19,10 @@ else:
     _BOARD_FONT_SIZE = 14
 
 
-# A:complex-oop
-# Gui conforms to the interface of PlayerOutput so it can be used by the Core
+###############################################################################
+# GROUP A SKILL: COMPLEX USER-DEFINED USE OF OOP MODEL                        #
+# Gui conforms to the interface of PlayerOutput so it can be used by the Core #
+###############################################################################
 class Gui(tk.Frame, PlayerOutput):
     def __init__(self):
         self.__language = Language(["en_UK"], partial(print, end=""))

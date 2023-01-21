@@ -6,8 +6,10 @@ from pente.game.Board import EMPTY
 from pente.game.GameState import GameState
 
 
-# A:complex-oop
-# The abstract class Applicable defines the utility method _resolve_player_index used by its subclasses
+#########################################################################################################
+# GROUP A SKILL: COMPLEX USER-DEFINED USE OF OOP MODEL                                                  #
+# The abstract class Applicable defines the utility method _resolve_player_index used by its subclasses #
+#########################################################################################################
 class Applicable(ABC):
     """Anything that looks at a pattern match is applicable"""
 

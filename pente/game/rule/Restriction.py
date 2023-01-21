@@ -14,10 +14,12 @@ class DisjunctionRestriction:
     def __init__(self, conjunctions: Collection[Collection[Restriction]]):
         self.__conjunctions = conjunctions
 
-    # A:recursion
-    # A DisjunctionRestriction can have any number of children which may themselves be DisjunctionRestrictions
-    # The truth value of a DisjunctionRestriction is therefore determined recursively
-    # The base case here is based on polymorphism - we recurse iff a child is a DisjunctionRestriction
+    ############################################################################################################
+    # GROUP A SKILL: RECURSIVE ALGORITHMS                                                                      #
+    # A DisjunctionRestriction can have any number of children which may themselves be DisjunctionRestrictions #
+    # The truth value of a DisjunctionRestriction is therefore determined recursively                          #
+    # The base case here is based on polymorphism - we recurse iff a child is a DisjunctionRestriction         #
+    ############################################################################################################
     def invoke(self, gamestate: GameState, center: tuple[int, ...], lines: Sequence[Board.Line]) -> bool:
         return any(all(restriction.invoke(gamestate, center, lines) for restriction in conjunction)
                    for conjunction in self.__conjunctions)
@@ -37,7 +39,9 @@ class PatternRestriction(Rule):
         return result
 
 
-# A:other
-# Defined Restriction as a sum type of two classes, to avoid the need for an abstract class which would associate the
-# classes but not define functionality
+#######################################################################################################################
+# GROUP A SKILL: OTHER TECHNICAL SKILL                                                                                #
+# Defined Restriction as a sum type of two classes, to avoid the need for an abstract class which would associate the #
+# classes but not define functionality                                                                                #
+#######################################################################################################################
 Restriction = DisjunctionRestriction | PatternRestriction

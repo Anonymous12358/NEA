@@ -38,9 +38,11 @@ class CoordsCondition(Applicable):
             return True
 
 
-# A:other
-# Defined Condition as a sum type of two classes, to avoid the need for an abstract class which would associate the
-# classes but not define functionality
+#####################################################################################################################
+# GROUP A SKILL: OTHER TECHNICAL SKILL                                                                              #
+# Defined Condition as a sum type of two classes, to avoid the need for an abstract class which would associate the #
+# classes but not define functionality                                                                              #
+#####################################################################################################################
 
 # Sum type is neater than empty superclass
 Condition = ScoreCondition | CoordsCondition

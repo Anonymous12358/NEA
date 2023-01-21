@@ -58,9 +58,11 @@ class Board:
         board.__data = array
         return board
 
-    # A:complex-algorithm
-    # Used to get lines through the tile on which the active player just moved, in order to match rules along these
-    # lines. Also used by the AI to match patterns as part of its strategy.
+    #################################################################################################################
+    # GROUP A SKILL: COMPLEX USER-DEFINED ALGORITHMS                                                                #
+    # Used to get lines through the tile on which the active player just moved, in order to match rules along these #
+    # lines. Also used by the AI to match patterns as part of its strategy.                                         #
+    #################################################################################################################
     def get_lines(self, center: tuple[int, ...]) -> list[Line]:
         """
         Get all lines, orthogonal or diagonal in any number of dimensions, through a given center on a given array
@@ -135,9 +137,11 @@ class Board:
             cropped_iarray = transformed_iarrray[tuple(crop_indices)]
             cropped_darray = transformed_darray[tuple(crop_indices[1:])]
 
-            # A:matrix-operation
-            # A generalisation of the Einstein summation, a complex matrix operation, is used to get core diagonals once
-            # the array has been appropriately transformed
+            #########################################################################################################
+            # GROUP A SKILL: ADVANCED MATRIX OPERATIONS                                                             #
+            # A generalisation of the Einstein summation, a complex matrix operation, is used to get core diagonals #
+            # once the array has been appropriately transformed                                                     #
+            #########################################################################################################
 
             # Take the diagonal from iarray for each dimension, and combine into a tuple
             # np.einsum can get a diagonal in an arbitrary number of dimensions
