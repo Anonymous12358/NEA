@@ -20,12 +20,10 @@ class Account(peewee.Model):
         database = db
 
 
-##########################################################################################################
-# GROUP B SKILL: SINGLE-TABLE SQL                                                                        #
-# Use SQL to interact with the database when a user registers, logs in or out, or changes details        #
-# Note that the strings for the queries are constructed in the peewee library, based on Python objects   #
-# Delegating the construction of queries to a well-tested library better protects against SQL injection  #
-##########################################################################################################
+# B:simple-sql
+# Use SQL to interact with the database when a user registers, logs in or out, or changes details
+# Note that the strings for the queries are constructed in the peewee library, based on Python objects
+# Delegating the construction of queries to a well-tested library better protects against SQL injection
 def register(username: str, password: str) -> Optional[uuid.UUID]:
     if Account.select().where(Account.username == username).exists():
         return None
